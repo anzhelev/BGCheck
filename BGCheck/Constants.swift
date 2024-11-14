@@ -4,9 +4,7 @@
 //
 //  Created by Andrey Zhelev on 14.11.2024.
 //
-
 import Foundation
-
 
 enum Constants {
     static let url = "https://publicbg.mjs.bg/BgInfo"

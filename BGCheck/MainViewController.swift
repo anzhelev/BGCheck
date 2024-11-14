@@ -4,7 +4,6 @@
 //
 //  Created by Andrey Zhelev on 30.07.2024.
 //
-
 import UIKit
 import WebKit
 
@@ -94,7 +93,7 @@ class MainViewController: UIViewController {
             webView.trailingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.trailingAnchor)
         ])
     }
-
+    
     private func loadWebPage() {
         if let url = URL(string: Constants.url) {
             let urlRequest = URLRequest(url: url)
