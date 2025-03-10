@@ -8,7 +8,23 @@ import UIKit
 import WebKit
 
 class MainViewController: UIViewController {
-    private var webView = WKWebView()
+    
+    private lazy var progressView: UIProgressView = {
+        var progressView = UIProgressView(progressViewStyle: .default)
+        progressView.progressTintColor = .orange
+        webView.addObserver(self, forKeyPath: #keyPath(WKWebView.estimatedProgress), options: .new, context: nil)
+        return progressView
+    }()
+    
+    private lazy var webView: WKWebView = {
+        let config = WKWebViewConfiguration()
+        let userContentController = WKUserContentController()
+        userContentController.add(self, name: "consoleLog")
+        config.userContentController = userContentController
+        let webView = WKWebView(frame: .zero, configuration: config)
+        webView.navigationDelegate = self
+        return webView
+    }()
     
     private lazy var checkButton: UIButton = {
         let button = UIButton()
@@ -41,6 +57,24 @@ class MainViewController: UIViewController {
         loadWebPage()
     }
     
+    override func observeValue(forKeyPath keyPath: String?, of object: Any?, change: [NSKeyValueChangeKey : Any]?, context: UnsafeMutableRawPointer?) {
+        if keyPath == "estimatedProgress" {
+            progressView.progress = Float(webView.estimatedProgress)
+            
+            if webView.estimatedProgress >= 1.0 {
+                UIView.animate(withDuration: 0.3, animations: {
+                    self.progressView.alpha = 0
+                })
+            } else {
+                progressView.alpha = 1
+            }
+        }
+    }
+    
+    deinit {
+        webView.removeObserver(self, forKeyPath: #keyPath(WKWebView.estimatedProgress))
+    }
+    
     @objc private func checkButtonAction() {
         self.webView.evaluateJavaScript(Constants.numberInputJavaScript, completionHandler: {(res, error) -> Void in })
         self.webView.evaluateJavaScript(Constants.pinInputJavaScript, completionHandler: {(res, error) -> Void in })
@@ -64,13 +98,15 @@ class MainViewController: UIViewController {
             item.setTitleColor(.white, for: .normal)
             item.titleLabel?.font = UIFont.systemFont(ofSize: 18, weight: .semibold)
             item.layer.masksToBounds = true
-            item.translatesAutoresizingMaskIntoConstraints = false
-            view.addSubview(item)
         }
         
-        webView.translatesAutoresizingMaskIntoConstraints = false
-        view.addSubview(webView)
-        view.addSubview(resetButton)
+        [checkButton, reloadButton, webView, resetButton].forEach {
+            $0.translatesAutoresizingMaskIntoConstraints = false
+            view.addSubview($0)
+        }
+        
+        progressView.translatesAutoresizingMaskIntoConstraints = false
+        webView.addSubview(progressView)
         
         NSLayoutConstraint.activate([
             checkButton.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor, constant: -60),
@@ -90,7 +126,12 @@ class MainViewController: UIViewController {
             webView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor),
             webView.bottomAnchor.constraint(equalTo: checkButton.topAnchor),
             webView.leadingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.leadingAnchor),
-            webView.trailingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.trailingAnchor)
+            webView.trailingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.trailingAnchor),
+            
+            progressView.topAnchor.constraint(equalTo: webView.topAnchor),
+            progressView.leadingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.leadingAnchor),
+            progressView.trailingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.trailingAnchor),
+            progressView.heightAnchor.constraint(equalToConstant: 2)
         ])
     }
     
@@ -98,6 +139,102 @@ class MainViewController: UIViewController {
         if let url = URL(string: Constants.url) {
             let urlRequest = URLRequest(url: url)
             webView.load(urlRequest)
+        }
+    }
+    
+    private func checkPass() {
+        webView.evaluateJavaScript("""
+            const elements = Array.from(document.querySelectorAll('*')).filter(element => {
+                const rect = element.getBoundingClientRect();
+                const ratio = rect.width / rect.height
+                return rect.width >= 250 && rect.width <= 400 && ratio >= 4.45 && ratio <= 4.65;
+            });
+            
+            elements.forEach(
+                element => {
+            
+            const rect = element.getBoundingClientRect();
+            const x = (rect.left + rect.width / 10);
+            const y = rect.top + rect.height / 2;
+
+            const touch = new Touch({
+                identifier: Date.now(),
+                target: element,
+                clientX: x,
+                clientY: y, 
+                screenX: x,
+                screenY: y,
+                pageX: x,
+                pageY: y,
+                radiusX: 5,
+                radiusY: 5,
+                rotationAngle: 0,
+                force: 1
+            });
+        
+            const touchStartEvent = new TouchEvent('touchstart', {
+                bubbles: true,
+                cancelable: true,
+                touches: [touch],
+                targetTouches: [touch],
+                changedTouches: [touch]
+            });
+        
+            const touchEndEvent = new TouchEvent('touchend', {
+                bubbles: true,
+                cancelable: true,
+                touches: [],
+                targetTouches: [],
+                changedTouches: [touch]
+            });
+        
+            const targetElement = document.elementFromPoint(x, y);
+        
+            if (targetElement) {
+                targetElement.dispatchEvent(touchStartEvent);
+                targetElement.dispatchEvent(touchEndEvent);
+                const mess = {
+                    message: "элемент:", 
+                    left: String(targetElement.id), 
+                    top: "Тап выполнен", 
+                    x: String(x),
+                    y: String(y)
+                    };
+                window.webkit.messageHandlers.consoleLog.postMessage(mess);
+                }
+            });    
+        """) { result, error in
+            if let error = error {
+                print("@@@ Ошибка: \(error.localizedDescription)")
+            } else {
+                print("@@@ Тап по координатам выполнен")
+            }
+        }
+    }
+}
+
+extension MainViewController: WKNavigationDelegate {
+    func webView(_ webView: WKWebView, didFinish navigation: WKNavigation!) {
+        //        DispatchQueue.main.asyncAfter(deadline: .now() + 8) {
+        //            self.checkPass()
+        //        }
+    }
+    
+    // Обрабатываем ошибки загрузки
+    func webView(_ webView: WKWebView, didFail navigation: WKNavigation!, withError error: Error) {
+        print("@@@ Ошибка загрузки: \(error.localizedDescription)")
+    }
+}
+
+extension MainViewController: WKScriptMessageHandler {
+    func userContentController(_ userContentController: WKUserContentController, didReceive message: WKScriptMessage) {
+        if message.name == "consoleLog", let messageBody = message.body as? [String: Any] {
+            let messageText = messageBody["message"] as? String ?? ""
+            let left = messageBody["left"] as? String ?? ""
+            let top = messageBody["top"] as? String ?? ""
+            let xCoord = messageBody["x"] as? String ?? "-"
+            let yCoord = messageBody["y"] as? String ?? "-"
+            print("@@@ JavaScript: \(messageText) (\(left),\(top)), (\(xCoord), \(yCoord))")
         }
     }
 }

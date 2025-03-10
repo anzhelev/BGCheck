@@ -35,6 +35,7 @@ class OnboardingViewController: UIViewController {
     private let numberInputField: UITextField = {
         let textField = UITextField()
         textField.textAlignment = .left
+        textField.addLeftPadding(8)
         textField.font = UIFont.systemFont(ofSize: 16, weight: .regular)
         textField.textColor = .black
         textField.backgroundColor = .white
@@ -50,6 +51,7 @@ class OnboardingViewController: UIViewController {
     private let pinInputField: UITextField = {
         let textField = UITextField()
         textField.textAlignment = .left
+        textField.addLeftPadding(8)
         textField.font = UIFont.systemFont(ofSize: 16, weight: .regular)
         textField.textColor = .black
         textField.backgroundColor = .white
@@ -77,7 +79,8 @@ class OnboardingViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         setUI()
-        updateButtonState()
+        setDefaultText()
+        updateButtonState()        
     }
     
     @objc private func confirmButtonPressed() {
@@ -129,5 +132,10 @@ class OnboardingViewController: UIViewController {
         confirmButton.widthAnchor.constraint(equalToConstant: 200),
         confirmButton.heightAnchor.constraint(equalToConstant: 40)
         ])
+    }
+    
+    private func setDefaultText() {
+        numberInputField.text = "12304/2021"
+        pinInputField.text = "527155"
     }
 }
