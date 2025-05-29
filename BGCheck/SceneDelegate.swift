@@ -19,11 +19,11 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
     }
     
     func setRootVC() -> UIViewController {
-        let shouldSkipOnboarding = !(UserDefaults.standard.string(forKey: "storedNumber") ?? "").isEmpty
+        let shouldSkipOnboarding = UserDefaults.standard.bool(forKey: "storedCases")
         
         return shouldSkipOnboarding
         ? MainViewController()
-        : OnboardingViewController()
+        : OnboardingVC()
     }
     
     func sceneDidDisconnect(_ scene: UIScene) {

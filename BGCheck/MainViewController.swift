@@ -1,13 +1,44 @@
-//
-//  ViewController.swift
-//  BGCheck
-//
-//  Created by Andrey Zhelev on 30.07.2024.
-//
 import UIKit
 import WebKit
 
 class MainViewController: UIViewController {
+    
+    private enum Constants {
+        static let mjcUrl = "https://publicbg.mjs.bg/BgInfo"
+        static let numberInputJavaScript = "document.getElementById('reqNun').value ="
+        static let pinInputJavaScript = "document.getElementById('pin').value ="
+        static let inputTagName: String = "INPUT"
+        static let inputpartitialID: String = "cf-chl-widget"
+        static let finalPageName: String = "Дирекция 'Българско гражданство'"
+        
+        static let clickOnButtonJavaScript = "document.getElementsByTagName('button')[0].click();"
+    }
+    
+    private let tagName: String = "INPUT"
+    private let partitialID: String = "cf-chl-widget"
+    private var currentLoadedPageName: String?
+    private var loadingFinished: Bool = false {
+        didSet {
+            widgetLoaded = false
+            elementsLoaded = false
+        }
+    }
+    
+    private var elementsLoaded: Bool = false {
+        didSet {
+            if elementsLoaded {
+                widgetLoaded = false
+            }
+        }
+    }
+    
+    private var widgetLoaded: Bool = false {
+        didSet {
+            if widgetLoaded {
+                print ("@@@ Все готово!")
+            }
+        }
+    }
     
     private lazy var progressView: UIProgressView = {
         var progressView = UIProgressView(progressViewStyle: .default)
@@ -17,36 +48,42 @@ class MainViewController: UIViewController {
     }()
     
     private lazy var webView: WKWebView = {
-        let config = WKWebViewConfiguration()
         let userContentController = WKUserContentController()
-        userContentController.add(self, name: "consoleLog")
+        let config = WKWebViewConfiguration()
         config.userContentController = userContentController
-        let webView = WKWebView(frame: .zero, configuration: config)
+        let webView = ClickTrackingWebView(frame: .zero, configuration: config, delegate: self)
+        
+        webView.backgroundColor = .white
         webView.navigationDelegate = self
+        
         return webView
     }()
     
-    private lazy var checkButton: UIButton = {
-        let button = UIButton()
-        button.addTarget(self, action: #selector(checkButtonAction), for: .touchUpInside)
-        button.setTitle("Проверить", for: .normal)
-        return button
+    private lazy var cases: [Case] = {
+        return loadCases()
     }()
     
     private lazy var reloadButton: UIButton = {
         let button = UIButton()
         button.addTarget(self, action: #selector(reloadButtonAction), for: .touchUpInside)
-        button.setTitle("Обновить", for: .normal)
+        button.setTitle("Reload page", for: .normal)
+        button.backgroundColor = .orange
+        button.layer.borderWidth = 1
+        button.layer.borderColor = UIColor.gray.cgColor
+        button.setTitleColor(.white, for: .normal)
+        button.titleLabel?.font = UIFont.systemFont(ofSize: 14, weight: .semibold)
+        button.layer.masksToBounds = true
+        button.layer.cornerRadius = 12
         return button
     }()
     
-    private lazy var resetButton: UIButton = {
+    private lazy var settingsButton: UIButton = {
         guard let image = UIImage(systemName: "gearshape.fill") else {
             return UIButton()
         }
-        let button = UIButton.systemButton(with: image, target: self, action: #selector(self.resetButtonAction))
-        button.addTarget(self, action: #selector(resetButtonAction), for: .touchUpInside)
-        button.tintColor = .darkGray
+        let button = UIButton.systemButton(with: image, target: self, action: #selector(self.settingsButtonAction))
+        button.addTarget(self, action: #selector(settingsButtonAction), for: .touchUpInside)
+        button.tintColor = .orange
         button.translatesAutoresizingMaskIntoConstraints = false
         return button
     }()
@@ -54,6 +91,8 @@ class MainViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         setUI()
+        addPartialIdScript()
+        addLoadCompleteScript()
         loadWebPage()
     }
     
@@ -75,32 +114,64 @@ class MainViewController: UIViewController {
         webView.removeObserver(self, forKeyPath: #keyPath(WKWebView.estimatedProgress))
     }
     
-    @objc private func checkButtonAction() {
-        self.webView.evaluateJavaScript(Constants.numberInputJavaScript, completionHandler: {(res, error) -> Void in })
-        self.webView.evaluateJavaScript(Constants.pinInputJavaScript, completionHandler: {(res, error) -> Void in })
+    @objc private func checkButtonAction(_ sender: UIButton) {
+        let numberInputJavaScript = "\(Constants.numberInputJavaScript) '\(cases[sender.tag].caseNumber ?? "")';"
+        let pinInputJavaScript = "\(Constants.pinInputJavaScript) '\(cases[sender.tag].pin ?? "")';"
+        self.webView.evaluateJavaScript(numberInputJavaScript, completionHandler: {(res, error) -> Void in })
+        self.webView.evaluateJavaScript(pinInputJavaScript, completionHandler: {(res, error) -> Void in })
         self.webView.evaluateJavaScript(Constants.clickOnButtonJavaScript, completionHandler: {(res, error) -> Void in })
     }
     
     @objc private func reloadButtonAction() {
         loadWebPage()
+        //
+        //        webView.evaluateJavaScript("document.querySelector('input[type=\"checkbox\"]') !== null") { (result, error) in
+        //            if let hasCheckbox = result as? Bool {
+        //                if hasCheckbox {
+        //                    print("@@@ На странице есть хотя бы один чекбокс")
+        //                } else {
+        //                    print("@@@ Чекбоксов не найдено")
+        //                }
+        //            } else if let error = error {
+        //                print("Ошибка при выполнении JavaScript: \(error.localizedDescription)")
+        //            }
+        //        }
+        
+        //        let js = """
+        //        var elements = document.getElementsByTagName('*');
+        //        var result = [];
+        //        for (var i = 0; i < elements.length; i++) {
+        //            result.push({
+        //                tag: elements[i].tagName,
+        //                id: elements[i].id || null,
+        //                class: elements[i].className || null
+        //            });
+        //        }
+        //        result;
+        //        """
+        //
+        //        webView.evaluateJavaScript(js) { (result, error) in
+        //            if let elements = result as? [[String: Any]] {
+        //                print("@@@\n")
+        //                for element in elements {
+        //                    //                    if element["tag"] as? String != "INPUT" { continue }
+        //                    print("@@@ Tag: \(element["tag"] ?? ""), ID: \(element["id"] ?? "none"), Class: \(element["class"] ?? "none")")
+        //                }
+        //            } else if let error = error {
+        //                print("@@@ JavaScript error: \(error.localizedDescription)")
+        //            }
+        //        }
     }
     
-    @objc private func resetButtonAction() {
+    @objc private func settingsButtonAction() {
         guard let window = self.view.window else { fatalError("Invalid Configuration") }
-        window.rootViewController = OnboardingViewController()
+        window.rootViewController = OnboardingVC()
     }
     
     private func setUI() {
-        for item in [checkButton, reloadButton] {
-            item.backgroundColor = .orange
-            item.layer.borderWidth = 1
-            item.layer.borderColor = UIColor.gray.cgColor
-            item.setTitleColor(.white, for: .normal)
-            item.titleLabel?.font = UIFont.systemFont(ofSize: 18, weight: .semibold)
-            item.layer.masksToBounds = true
-        }
-        
-        [checkButton, reloadButton, webView, resetButton].forEach {
+        view.backgroundColor = .white
+        let buttonsStackView = setCaseButtonsStackView()
+        [webView, settingsButton, buttonsStackView, reloadButton].forEach {
             $0.translatesAutoresizingMaskIntoConstraints = false
             view.addSubview($0)
         }
@@ -109,22 +180,25 @@ class MainViewController: UIViewController {
         webView.addSubview(progressView)
         
         NSLayoutConstraint.activate([
-            checkButton.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor, constant: -60),
-            checkButton.leadingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.leadingAnchor, constant: 0),
-            checkButton.trailingAnchor.constraint(equalTo: view.centerXAnchor),
-            checkButton.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor),
-            reloadButton.topAnchor.constraint(equalTo: checkButton.topAnchor),
-            reloadButton.leadingAnchor.constraint(equalTo: view.centerXAnchor),
-            reloadButton.trailingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.trailingAnchor),
-            reloadButton.bottomAnchor.constraint(equalTo: checkButton.bottomAnchor),
-            resetButton.trailingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.trailingAnchor),
-            resetButton.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: 0),
-            resetButton.trailingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.trailingAnchor, constant: 0),
-            resetButton.widthAnchor.constraint(equalToConstant: 50),
-            resetButton.heightAnchor.constraint(equalTo: resetButton.widthAnchor),
+            reloadButton.leadingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.leadingAnchor, constant: 10),
+            reloadButton.trailingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.trailingAnchor, constant: -10),
+            reloadButton.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor, constant: -6),
+            reloadButton.heightAnchor.constraint(equalToConstant: 40),
+            
+            buttonsStackView.bottomAnchor.constraint(equalTo: reloadButton.topAnchor, constant: -6),
+            buttonsStackView.leadingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.leadingAnchor, constant: 10),
+            buttonsStackView.trailingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.trailingAnchor, constant: -10),
+            buttonsStackView.heightAnchor.constraint(equalToConstant: 40),
+            
+            settingsButton.trailingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.trailingAnchor),
+            settingsButton.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: 0),
+            settingsButton.trailingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.trailingAnchor, constant: 0),
+            settingsButton.widthAnchor.constraint(equalToConstant: 50),
+            settingsButton.heightAnchor.constraint(equalTo: settingsButton.widthAnchor),
             
             webView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor),
-            webView.bottomAnchor.constraint(equalTo: checkButton.topAnchor),
+            webView.bottomAnchor.constraint(equalTo: buttonsStackView.topAnchor, constant: -10),
+            //webView.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor),
             webView.leadingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.leadingAnchor),
             webView.trailingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.trailingAnchor),
             
@@ -135,89 +209,145 @@ class MainViewController: UIViewController {
         ])
     }
     
+    private func setCheckCaseButton(tag: Int) -> UIButton {
+        let button = UIButton(type: .system)
+        button.tag = tag
+        button.setTitle("Case \(tag + 1)", for: .normal)
+        
+        button.backgroundColor = .orange
+        button.layer.borderWidth = 1
+        button.layer.borderColor = UIColor.gray.cgColor
+        button.setTitleColor(.white, for: .normal)
+        button.titleLabel?.font = UIFont.systemFont(ofSize: 14, weight: .semibold)
+        button.layer.masksToBounds = true
+        button.layer.cornerRadius = 12
+        
+        button.addTarget(self, action: #selector(checkButtonAction(_:)), for: .touchUpInside)
+        return button
+    }
+    
+    private func setCaseButtonsStackView() -> UIStackView {
+        let subviews: [UIView] = cases.enumerated().map {
+            setCheckCaseButton(tag: $0.offset)
+        }
+        
+        let stackView = UIStackView(arrangedSubviews: subviews)
+        stackView.backgroundColor = .clear
+        stackView.axis = .horizontal
+        stackView.distribution = .fillEqually
+        stackView.spacing = 4
+        return stackView
+    }
+    
     private func loadWebPage() {
-        if let url = URL(string: Constants.url) {
+        if let url = URL(string: Constants.mjcUrl) {
             let urlRequest = URLRequest(url: url)
             webView.load(urlRequest)
         }
     }
     
-    private func checkPass() {
-        webView.evaluateJavaScript("""
-            const elements = Array.from(document.querySelectorAll('*')).filter(element => {
-                const rect = element.getBoundingClientRect();
-                const ratio = rect.width / rect.height
-                return rect.width >= 250 && rect.width <= 400 && ratio >= 4.45 && ratio <= 4.65;
-            });
-            
-            elements.forEach(
-                element => {
-            
-            const rect = element.getBoundingClientRect();
-            const x = (rect.left + rect.width / 10);
-            const y = rect.top + rect.height / 2;
-
-            const touch = new Touch({
-                identifier: Date.now(),
-                target: element,
-                clientX: x,
-                clientY: y, 
-                screenX: x,
-                screenY: y,
-                pageX: x,
-                pageY: y,
-                radiusX: 5,
-                radiusY: 5,
-                rotationAngle: 0,
-                force: 1
-            });
-        
-            const touchStartEvent = new TouchEvent('touchstart', {
-                bubbles: true,
-                cancelable: true,
-                touches: [touch],
-                targetTouches: [touch],
-                changedTouches: [touch]
-            });
-        
-            const touchEndEvent = new TouchEvent('touchend', {
-                bubbles: true,
-                cancelable: true,
-                touches: [],
-                targetTouches: [],
-                changedTouches: [touch]
-            });
-        
-            const targetElement = document.elementFromPoint(x, y);
-        
-            if (targetElement) {
-                targetElement.dispatchEvent(touchStartEvent);
-                targetElement.dispatchEvent(touchEndEvent);
-                const mess = {
-                    message: "элемент:", 
-                    left: String(targetElement.id), 
-                    top: "Тап выполнен", 
-                    x: String(x),
-                    y: String(y)
-                    };
-                window.webkit.messageHandlers.consoleLog.postMessage(mess);
-                }
-            });    
-        """) { result, error in
-            if let error = error {
-                print("@@@ Ошибка: \(error.localizedDescription)")
-            } else {
-                print("@@@ Тап по координатам выполнен")
+    private func loadCases() -> [Case] {
+        var cases: [Case] = []
+        var caseName: String?
+        var pin: String?
+        for caseNumber in 0...4 {
+            caseName = UserDefaults.standard.string(forKey: "case\(caseNumber)Number")
+            pin = UserDefaults.standard.string(forKey: "case\(caseNumber)Pin")
+            if caseName != nil || pin != nil {
+                cases.append(.init(caseNumber: caseName, pin: pin))
             }
         }
+        return cases
+    }
+    
+    private func addPartialIdScript() {
+        let partialIdScript = """
+        var observer = new MutationObserver(function(mutations) {
+            // Поиск всех элементов с атрибутом id
+            var elements = document.querySelectorAll('[id]');
+            
+            elements.forEach(element => {
+                if (element.id.includes('\(Constants.inputpartitialID)') && element.tagName == '\(Constants.inputTagName)') {
+                    window.webkit.messageHandlers.partialIdHandler.postMessage({
+                        found: true,
+                        fullId: element.id,
+                        tagName: element.tagName,
+                        html: element.outerHTML
+                    });
+                }
+            });
+        });
+        
+        observer.observe(document, {
+            childList: true,
+            subtree: true,
+            attributeFilter: ['id']
+        });
+        """
+        
+        let script = WKUserScript(source: partialIdScript,
+                                  injectionTime: .atDocumentEnd,
+                                  forMainFrameOnly: false)
+        webView.configuration.userContentController.addUserScript(script)
+        webView.configuration.userContentController.add(self, name: "partialIdHandler")
+    }
+    
+    private func addLoadCompleteScript() {
+        let loadCompleteScript = """
+        // Проверяем статус загрузки документа
+        if (document.readyState === 'complete') {
+            // Проверяем загрузку изображений
+            const images = Array.from(document.images);
+            const loadedImages = images.filter(img => img.complete);
+            
+            // Проверяем загрузку iframe
+            const iframes = Array.from(document.getElementsByTagName('iframe'));
+            const loadedIframes = iframes.filter(iframe => iframe.contentDocument?.readyState === 'complete');
+            
+            window.webkit.messageHandlers.pageLoadHandler.postMessage({
+                documentReady: true,
+                allImagesLoaded: images.length === loadedImages.length,
+                allIframesLoaded: iframes.length === loadedIframes.length,
+                totalElements: document.getElementsByTagName('*').length
+            });
+        } else {
+            window.addEventListener('load', function() {
+                // Повторная проверка после события load
+                const checkInterval = setInterval(() => {
+                    const images = Array.from(document.images);
+                    if (images.every(img => img.complete)) {
+                        clearInterval(checkInterval);
+                        window.webkit.messageHandlers.pageLoadHandler.postMessage({
+                            documentReady: true,
+                            allImagesLoaded: true,
+                            allIframesLoaded: Array.from(document.getElementsByTagName('iframe'))
+                                .every(iframe => iframe.contentDocument?.readyState === 'complete'),
+                            totalElements: document.getElementsByTagName('*').length
+                        });
+                    }
+                }, 100);
+            });
+        }
+        """
+        
+        let script = WKUserScript(source: loadCompleteScript,
+                                  injectionTime: .atDocumentEnd,
+                                  forMainFrameOnly: false)
+        webView.configuration.userContentController.addUserScript(script)
+        webView.configuration.userContentController.add(self, name: "pageLoadHandler")
     }
 }
 
 extension MainViewController: WKNavigationDelegate {
+    func webView(_ webView: WKWebView, didStartProvisionalNavigation navigation: WKNavigation!) {
+        self.loadingFinished = false
+        print("@@@ началась загрузка страницы:", webView.title ?? "")
+    }
+    
     func webView(_ webView: WKWebView, didFinish navigation: WKNavigation!) {
-        //        DispatchQueue.main.asyncAfter(deadline: .now() + 8) {
-        //            self.checkPass()
-        //        }
+        self.loadingFinished = true
+        self.currentLoadedPageName = webView.title ?? ""
+        print("@@@ завершена загрузка страницы:", webView.title ?? "")
     }
     
     // Обрабатываем ошибки загрузки
@@ -228,13 +358,38 @@ extension MainViewController: WKNavigationDelegate {
 
 extension MainViewController: WKScriptMessageHandler {
     func userContentController(_ userContentController: WKUserContentController, didReceive message: WKScriptMessage) {
-        if message.name == "consoleLog", let messageBody = message.body as? [String: Any] {
-            let messageText = messageBody["message"] as? String ?? ""
-            let left = messageBody["left"] as? String ?? ""
-            let top = messageBody["top"] as? String ?? ""
-            let xCoord = messageBody["x"] as? String ?? "-"
-            let yCoord = messageBody["y"] as? String ?? "-"
-            print("@@@ JavaScript: \(messageText) (\(left),\(top)), (\(xCoord), \(yCoord))")
+        
+        switch message.name {
+        case "partialIdHandler":
+            if self.loadingFinished { //,
+                //               let data = message.body as? [String: Any] {
+                widgetLoaded = true
+                //                print("@@@", data["tagName"] ?? "", data["fullId"] ?? "")
+            }
+            
+        case "pageLoadHandler":
+            if self.loadingFinished,
+               let data = message.body as? [String: Any] {
+                //                print("@@@ Статус загрузки страницы: \(data)")
+                
+                if let complete = data["allImagesLoaded"] as? Bool, complete {
+                    if data["totalElements"] as? Int ?? 0 == 13 {
+                        elementsLoaded = true
+                    }
+                    //                    print("@@@ Все элементы страницы загружены", data["totalElements"] ?? 0)
+                    // Действия после загрузки
+                }
+            }
+            
+        default:
+            break
         }
+    }
+}
+
+extension MainViewController: ClickTrackingWebViewDelegate {
+    func clickTracked(on point: CGPoint) {
+        loadingFinished = false
+        print("@@@ CLICK", point)
     }
 }
