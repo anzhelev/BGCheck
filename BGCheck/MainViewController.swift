@@ -2,43 +2,9 @@ import UIKit
 import WebKit
 
 class MainViewController: UIViewController {
-    
-    private enum Constants {
-        static let mjcUrl = "https://publicbg.mjs.bg/BgInfo"
-        static let numberInputJavaScript = "document.getElementById('reqNun').value ="
-        static let pinInputJavaScript = "document.getElementById('pin').value ="
-        static let inputTagName: String = "INPUT"
-        static let inputpartitialID: String = "cf-chl-widget"
-        static let finalPageName: String = "Дирекция 'Българско гражданство'"
-        
-        static let clickOnButtonJavaScript = "document.getElementsByTagName('button')[0].click();"
-    }
-    
-    private let tagName: String = "INPUT"
-    private let partitialID: String = "cf-chl-widget"
     private var currentLoadedPageName: String?
-    private var loadingFinished: Bool = false {
-        didSet {
-            widgetLoaded = false
-            elementsLoaded = false
-        }
-    }
-    
-    private var elementsLoaded: Bool = false {
-        didSet {
-            if elementsLoaded {
-                widgetLoaded = false
-            }
-        }
-    }
-    
-    private var widgetLoaded: Bool = false {
-        didSet {
-            if widgetLoaded {
-                print ("@@@ Все готово!")
-            }
-        }
-    }
+    private var pageLoaded: Bool = false
+    private var autoCheck: Bool = false
     
     private lazy var progressView: UIProgressView = {
         var progressView = UIProgressView(progressViewStyle: .default)
@@ -91,7 +57,7 @@ class MainViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
         setUI()
-        addPartialIdScript()
+        addMessagesSearchScript()
         addLoadCompleteScript()
         loadWebPage()
     }
@@ -115,52 +81,15 @@ class MainViewController: UIViewController {
     }
     
     @objc private func checkButtonAction(_ sender: UIButton) {
-        let numberInputJavaScript = "\(Constants.numberInputJavaScript) '\(cases[sender.tag].caseNumber ?? "")';"
-        let pinInputJavaScript = "\(Constants.pinInputJavaScript) '\(cases[sender.tag].pin ?? "")';"
+        let numberInputJavaScript = "\(JavaScriptConstants.numberInputJavaScript) '\(cases[sender.tag].caseNumber ?? "")';"
+        let pinInputJavaScript = "\(JavaScriptConstants.pinInputJavaScript) '\(cases[sender.tag].pin ?? "")';"
         self.webView.evaluateJavaScript(numberInputJavaScript, completionHandler: {(res, error) -> Void in })
         self.webView.evaluateJavaScript(pinInputJavaScript, completionHandler: {(res, error) -> Void in })
-        self.webView.evaluateJavaScript(Constants.clickOnButtonJavaScript, completionHandler: {(res, error) -> Void in })
+        self.webView.evaluateJavaScript(JavaScriptConstants.clickOnButtonJavaScript, completionHandler: {(res, error) -> Void in })
     }
     
     @objc private func reloadButtonAction() {
         loadWebPage()
-        //
-        //        webView.evaluateJavaScript("document.querySelector('input[type=\"checkbox\"]') !== null") { (result, error) in
-        //            if let hasCheckbox = result as? Bool {
-        //                if hasCheckbox {
-        //                    print("@@@ На странице есть хотя бы один чекбокс")
-        //                } else {
-        //                    print("@@@ Чекбоксов не найдено")
-        //                }
-        //            } else if let error = error {
-        //                print("Ошибка при выполнении JavaScript: \(error.localizedDescription)")
-        //            }
-        //        }
-        
-        //        let js = """
-        //        var elements = document.getElementsByTagName('*');
-        //        var result = [];
-        //        for (var i = 0; i < elements.length; i++) {
-        //            result.push({
-        //                tag: elements[i].tagName,
-        //                id: elements[i].id || null,
-        //                class: elements[i].className || null
-        //            });
-        //        }
-        //        result;
-        //        """
-        //
-        //        webView.evaluateJavaScript(js) { (result, error) in
-        //            if let elements = result as? [[String: Any]] {
-        //                print("@@@\n")
-        //                for element in elements {
-        //                    //                    if element["tag"] as? String != "INPUT" { continue }
-        //                    print("@@@ Tag: \(element["tag"] ?? ""), ID: \(element["id"] ?? "none"), Class: \(element["class"] ?? "none")")
-        //                }
-        //            } else if let error = error {
-        //                print("@@@ JavaScript error: \(error.localizedDescription)")
-        //            }
-        //        }
     }
     
     @objc private func settingsButtonAction() {
@@ -240,7 +169,7 @@ class MainViewController: UIViewController {
     }
     
     private func loadWebPage() {
-        if let url = URL(string: Constants.mjcUrl) {
+        if let url = URL(string: WebConstants.mjcUrl) {
             let urlRequest = URLRequest(url: url)
             webView.load(urlRequest)
         }
@@ -260,77 +189,17 @@ class MainViewController: UIViewController {
         return cases
     }
     
-    private func addPartialIdScript() {
-        let partialIdScript = """
-        var observer = new MutationObserver(function(mutations) {
-            // Поиск всех элементов с атрибутом id
-            var elements = document.querySelectorAll('[id]');
-            
-            elements.forEach(element => {
-                if (element.id.includes('\(Constants.inputpartitialID)') && element.tagName == '\(Constants.inputTagName)') {
-                    window.webkit.messageHandlers.partialIdHandler.postMessage({
-                        found: true,
-                        fullId: element.id,
-                        tagName: element.tagName,
-                        html: element.outerHTML
-                    });
-                }
-            });
-        });
-        
-        observer.observe(document, {
-            childList: true,
-            subtree: true,
-            attributeFilter: ['id']
-        });
-        """
-        
-        let script = WKUserScript(source: partialIdScript,
+    private func addMessagesSearchScript() {
+        let script = WKUserScript(source: JavaScriptConstants.checkMessagesScript,
                                   injectionTime: .atDocumentEnd,
                                   forMainFrameOnly: false)
+        
         webView.configuration.userContentController.addUserScript(script)
-        webView.configuration.userContentController.add(self, name: "partialIdHandler")
+        webView.configuration.userContentController.add(self, name: "checkMessagesHandler")
     }
     
     private func addLoadCompleteScript() {
-        let loadCompleteScript = """
-        // Проверяем статус загрузки документа
-        if (document.readyState === 'complete') {
-            // Проверяем загрузку изображений
-            const images = Array.from(document.images);
-            const loadedImages = images.filter(img => img.complete);
-            
-            // Проверяем загрузку iframe
-            const iframes = Array.from(document.getElementsByTagName('iframe'));
-            const loadedIframes = iframes.filter(iframe => iframe.contentDocument?.readyState === 'complete');
-            
-            window.webkit.messageHandlers.pageLoadHandler.postMessage({
-                documentReady: true,
-                allImagesLoaded: images.length === loadedImages.length,
-                allIframesLoaded: iframes.length === loadedIframes.length,
-                totalElements: document.getElementsByTagName('*').length
-            });
-        } else {
-            window.addEventListener('load', function() {
-                // Повторная проверка после события load
-                const checkInterval = setInterval(() => {
-                    const images = Array.from(document.images);
-                    if (images.every(img => img.complete)) {
-                        clearInterval(checkInterval);
-                        window.webkit.messageHandlers.pageLoadHandler.postMessage({
-                            documentReady: true,
-                            allImagesLoaded: true,
-                            allIframesLoaded: Array.from(document.getElementsByTagName('iframe'))
-                                .every(iframe => iframe.contentDocument?.readyState === 'complete'),
-                            totalElements: document.getElementsByTagName('*').length
-                        });
-                    }
-                }, 100);
-            });
-        }
-        """
-        
-        let script = WKUserScript(source: loadCompleteScript,
+        let script = WKUserScript(source: JavaScriptConstants.loadCompleteScript,
                                   injectionTime: .atDocumentEnd,
                                   forMainFrameOnly: false)
         webView.configuration.userContentController.addUserScript(script)
@@ -340,17 +209,11 @@ class MainViewController: UIViewController {
 
 extension MainViewController: WKNavigationDelegate {
     func webView(_ webView: WKWebView, didStartProvisionalNavigation navigation: WKNavigation!) {
-        self.loadingFinished = false
-        print("@@@ началась загрузка страницы:", webView.title ?? "")
     }
     
     func webView(_ webView: WKWebView, didFinish navigation: WKNavigation!) {
-        self.loadingFinished = true
-        self.currentLoadedPageName = webView.title ?? ""
-        print("@@@ завершена загрузка страницы:", webView.title ?? "")
     }
-    
-    // Обрабатываем ошибки загрузки
+
     func webView(_ webView: WKWebView, didFail navigation: WKNavigation!, withError error: Error) {
         print("@@@ Ошибка загрузки: \(error.localizedDescription)")
     }
@@ -360,25 +223,17 @@ extension MainViewController: WKScriptMessageHandler {
     func userContentController(_ userContentController: WKUserContentController, didReceive message: WKScriptMessage) {
         
         switch message.name {
-        case "partialIdHandler":
-            if self.loadingFinished { //,
-                //               let data = message.body as? [String: Any] {
-                widgetLoaded = true
-                //                print("@@@", data["tagName"] ?? "", data["fullId"] ?? "")
+            
+        case "checkMessagesHandler":
+            if let data = message.body as? [String: Any],
+               let messages = data["messages"] as? [String] {
+                print("@@@:", messages.joined(separator: "\n@@@: "))
             }
             
         case "pageLoadHandler":
-            if self.loadingFinished,
-               let data = message.body as? [String: Any] {
-                //                print("@@@ Статус загрузки страницы: \(data)")
-                
-                if let complete = data["allImagesLoaded"] as? Bool, complete {
-                    if data["totalElements"] as? Int ?? 0 == 13 {
-                        elementsLoaded = true
-                    }
-                    //                    print("@@@ Все элементы страницы загружены", data["totalElements"] ?? 0)
-                    // Действия после загрузки
-                }
+            if webView.title ?? "" == WebConstants.finalPageName {
+                pageLoaded = true
+                print("@@@: загружена страница:", webView.title ?? "")
             }
             
         default:
@@ -389,7 +244,5 @@ extension MainViewController: WKScriptMessageHandler {
 
 extension MainViewController: ClickTrackingWebViewDelegate {
     func clickTracked(on point: CGPoint) {
-        loadingFinished = false
-        print("@@@ CLICK", point)
     }
 }
