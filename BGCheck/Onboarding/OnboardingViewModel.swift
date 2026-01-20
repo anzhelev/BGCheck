@@ -48,13 +48,6 @@ class OnboardingViewModel {
             }
         }
         
-        if cases.count == 0 {
-            cases.append(.init(caseNumber: "12304/2021", pin: "527155"))
-            cases.append(.init(caseNumber: "12781/2021", pin: "166511"))
-            cases.append(.init(caseNumber: "12782/2021", pin: "076332"))
-//            saveCases()
-        }
-        
         return cases
     }
     
