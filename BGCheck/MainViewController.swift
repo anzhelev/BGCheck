@@ -215,7 +215,7 @@ extension MainViewController: WKNavigationDelegate {
     }
 
     func webView(_ webView: WKWebView, didFail navigation: WKNavigation!, withError error: Error) {
-        print("@@@ Ошибка загрузки: \(error.localizedDescription)")
+        print("@@@ load error: \(error.localizedDescription)")
     }
 }
 
@@ -233,7 +233,7 @@ extension MainViewController: WKScriptMessageHandler {
         case "pageLoadHandler":
             if webView.title ?? "" == WebConstants.finalPageName {
                 pageLoaded = true
-                print("@@@: загружена страница:", webView.title ?? "")
+                print("@@@: page loaded:", webView.title ?? "")
             }
             
         default:

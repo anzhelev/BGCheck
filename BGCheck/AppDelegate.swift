@@ -1,10 +1,3 @@
-//
-//  AppDelegate.swift
-//  BGCheck
-//
-//  Created by Andrey Zhelev on 30.07.2024.
-//
-
 import UIKit
 
 @main

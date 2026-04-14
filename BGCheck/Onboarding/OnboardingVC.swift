@@ -82,7 +82,7 @@ class OnboardingVC: UIViewController {
         tableView.showsVerticalScrollIndicator = false
         tableView.separatorInset = UIEdgeInsets(top: 0, left: 10, bottom: 0, right: 10)
         tableView.register(MainTableCell.self, forCellReuseIdentifier: MainTableCell.reuseIdentifier)
-//        tableView.separatorStyle = .none
+        tableView.separatorStyle = .none
     }
     
     private func setupUI() {
