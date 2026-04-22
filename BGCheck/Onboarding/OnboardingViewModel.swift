@@ -15,7 +15,7 @@ class OnboardingViewModel {
     
     // MARK: - Public Methods
     func addCase() {
-        cases.append(.init(caseNumber: nil, pin: nil))
+        cases.append(.init(caseName: nil, caseNumber: nil, pin: nil))
         onboardingVCBinding.value = .addItem(.init(row: casesCount - 1, section: 0))
     }
     
@@ -30,21 +30,24 @@ class OnboardingViewModel {
     
     func getCellParams(for row: Int) -> MainTableCellParams {
         .init(row: row,
+              caseName: cases[row].caseName,
               caseNumber: cases[row].caseNumber,
-              pin: cases[row].pin,
-              separator: row != cases.count - 1
+              pin: cases[row].pin
+//              separator: row != cases.count - 1
         )
     }
     
     private func loadCases() -> [Case] {
         var cases: [Case] = []
         var caseName: String?
+        var caseNumber: String?
         var pin: String?
-        for caseNumber in 0...4 {
-            caseName = UserDefaults.standard.string(forKey: "case\(caseNumber)Number")
-            pin = UserDefaults.standard.string(forKey: "case\(caseNumber)Pin")
-            if caseName != nil || pin != nil {
-                cases.append(.init(caseNumber: caseName, pin: pin))
+        for row in 0...4 {
+            caseName = UserDefaults.standard.string(forKey: "case\(row)Name")
+            caseNumber = UserDefaults.standard.string(forKey: "case\(row)Number")
+            pin = UserDefaults.standard.string(forKey: "case\(row)Pin")
+            if caseName != nil || caseNumber != nil || pin != nil {
+                cases.append(.init(caseName: caseName, caseNumber: caseNumber, pin: pin))
             }
         }
         
@@ -60,6 +63,10 @@ class OnboardingViewModel {
         var storedCases: Bool = false
         
         for (index, caseData) in cases.enumerated() {
+            if caseData.caseName?.isEmpty == false {
+                UserDefaults.standard.set(caseData.caseName, forKey: "case\(index)Name")
+                storedCases = true
+            }
             if caseData.caseNumber?.isEmpty == false {
                 UserDefaults.standard.set(caseData.caseNumber, forKey: "case\(index)Number")
                 storedCases = true
@@ -75,13 +82,18 @@ class OnboardingViewModel {
 
 // MARK: - MainTableCellDelegate
 extension OnboardingViewModel: MainTableCellDelegate {
-    func caseNumberChanged(to newName: String, for row: Int) {
-        cases[row] = .init(caseNumber: newName, pin: cases[row].pin)
+    func caseNameChanged(to newName: String, for row: Int) {
+        cases[row] = .init(caseName: newName, caseNumber: cases[row].caseNumber, pin: cases[row].pin)
         saveCases()
     }
     
-    func pinChanged(to newAge: String, for row: Int) {
-        cases[row] = .init(caseNumber: cases[row].caseNumber, pin: newAge)
+    func caseNumberChanged(to newName: String, for row: Int) {
+        cases[row] = .init(caseName: cases[row].caseName, caseNumber: newName, pin: cases[row].pin)
+        saveCases()
+    }
+    
+    func pinChanged(to newPin: String, for row: Int) {
+        cases[row] = .init(caseName: cases[row].caseName, caseNumber: cases[row].caseNumber, pin: newPin)
         saveCases()
     }
     

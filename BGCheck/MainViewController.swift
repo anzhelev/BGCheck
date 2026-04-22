@@ -178,12 +178,14 @@ class MainViewController: UIViewController {
     private func loadCases() -> [Case] {
         var cases: [Case] = []
         var caseName: String?
+        var caseNumber: String?
         var pin: String?
-        for caseNumber in 0...4 {
-            caseName = UserDefaults.standard.string(forKey: "case\(caseNumber)Number")
-            pin = UserDefaults.standard.string(forKey: "case\(caseNumber)Pin")
+        for row in 0...4 {
+            caseName = UserDefaults.standard.string(forKey: "case\(row)Name")
+            caseNumber = UserDefaults.standard.string(forKey: "case\(row)Number")
+            pin = UserDefaults.standard.string(forKey: "case\(row)Pin")
             if caseName != nil || pin != nil {
-                cases.append(.init(caseNumber: caseName, pin: pin))
+                cases.append(.init(caseName: caseName, caseNumber: caseNumber, pin: pin))
             }
         }
         return cases

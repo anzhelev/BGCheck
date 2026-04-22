@@ -8,10 +8,11 @@ class OnboardingVC: UIViewController {
         static let borderWidth: CGFloat = 1
         static let labelFontSize: CGFloat = 15
         static let valueFontSize: CGFloat = 16
-        static let cellHeight: CGFloat = 60
+        static let casesViewHeight: CGFloat = 50
+        static let casesTableCellHeight: CGFloat = 85
         static let buttonHeight: CGFloat = 44
-        static let resetButtonHeight: CGFloat = 48
-        static let resetButtonWidth: CGFloat = 240
+        static let doneButtonHeight: CGFloat = 48
+        static let doneButtonWidth: CGFloat = 240
         static let leadingOffset: CGFloat = 20
         static let spacing: CGFloat = 10
         static let smallSpacing: CGFloat = 8
@@ -86,7 +87,7 @@ class OnboardingVC: UIViewController {
     }
     
     private func setupUI() {
-        view.backgroundColor = Colors.onboardingBg
+        view.backgroundColor = .white // Colors.onboardingBg
         
         configureAddCasesView()
         configureDoneButton()
@@ -102,21 +103,21 @@ class OnboardingVC: UIViewController {
         }
         
         NSLayoutConstraint.activate([
-            coatOfArmsPicture.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: 20),
+            coatOfArmsPicture.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: 10),
             coatOfArmsPicture.centerXAnchor.constraint(equalTo: view.centerXAnchor),
             coatOfArmsPicture.heightAnchor.constraint(equalTo: coatOfArmsPicture.widthAnchor),
-            coatOfArmsPicture.heightAnchor.constraint(equalToConstant: 200),
+            coatOfArmsPicture.heightAnchor.constraint(equalToConstant: 180),
             
             casesView.topAnchor.constraint(equalTo: coatOfArmsPicture.bottomAnchor, constant: Constants.spacing),
-            casesView.heightAnchor.constraint(equalToConstant: Constants.cellHeight),
+            casesView.heightAnchor.constraint(equalToConstant: Constants.casesViewHeight),
             
-            tableView.topAnchor.constraint(equalTo: casesView.bottomAnchor, constant: 10),
+            tableView.topAnchor.constraint(equalTo: casesView.bottomAnchor, constant: 6),
             tableView.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor, constant: -80),
             
             resetButton.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor, constant: -4),
             resetButton.centerXAnchor.constraint(equalTo: view.centerXAnchor),
-            resetButton.widthAnchor.constraint(equalToConstant: Constants.resetButtonWidth),
-            resetButton.heightAnchor.constraint(equalToConstant: Constants.resetButtonHeight)
+            resetButton.widthAnchor.constraint(equalToConstant: Constants.doneButtonWidth),
+            resetButton.heightAnchor.constraint(equalToConstant: Constants.doneButtonHeight)
         ])
     }
 
@@ -224,7 +225,7 @@ extension OnboardingVC: UITableViewDataSource, UITableViewDelegate {
     }
     
     func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
-        50
+        Constants.casesTableCellHeight
     }
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
