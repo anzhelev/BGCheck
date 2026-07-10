@@ -17,7 +17,7 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
         
         return shouldSkipOnboarding
         ? MainViewController()
-        : OnboardingVC()
+        : UINavigationController(rootViewController: OnboardingVC())
     }
     
     func sceneDidDisconnect(_ scene: UIScene) {

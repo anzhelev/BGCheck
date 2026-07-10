@@ -1,7 +1,9 @@
 import UIKit
 
-enum Colors {
-    static var onboardingBg: UIColor {UIColor(named: "onboard_bg") ?? UIColor.lightGray}
-    static var buttonActive: UIColor {UIColor(named: "button_active") ?? UIColor.red}
-    static var textValueColor: UIColor {UIColor(named: "textValueColor") ?? UIColor.darkGray}
+extension CGColor {
+    static var buttonsPrimaryCGC: CGColor {UIColor.buttonsPrimary.cgColor}
+    static var buttonsSecondaryCGC: CGColor {UIColor.buttonsSecondary.cgColor}
+    static var textPrimaryCGC: CGColor {UIColor.textPrimary.cgColor}
+    static var textSecondaryCGC: CGColor {UIColor.textSecondary.cgColor}
+    static var buttonsBorderCGC: CGColor {UIColor.buttonsBorder.cgColor}
 }

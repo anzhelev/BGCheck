@@ -2,10 +2,19 @@ import UIKit
 import WebKit
 
 class MainViewController: UIViewController {
+    private let decoder = JSONDecoder()
+    private let encoder = JSONEncoder()
     private var currentLoadedPageName: String?
     private var pageLoaded: Bool = false
     private var autoCheck: Bool = false
     
+    private var lastCaseChecked: Int = 0
+    private var currentMessage: String? {
+        didSet {
+            updateCaseHistory()
+        }
+    }
+
     private lazy var progressView: UIProgressView = {
         var progressView = UIProgressView(progressViewStyle: .default)
         progressView.progressTintColor = .orange
@@ -19,7 +28,7 @@ class MainViewController: UIViewController {
         config.userContentController = userContentController
         let webView = ClickTrackingWebView(frame: .zero, configuration: config, delegate: self)
         
-        webView.backgroundColor = .white
+        webView.backgroundColor = .backgroundPrimary
         webView.navigationDelegate = self
         
         return webView
@@ -32,24 +41,24 @@ class MainViewController: UIViewController {
     private lazy var reloadButton: UIButton = {
         let button = UIButton()
         button.addTarget(self, action: #selector(reloadButtonAction), for: .touchUpInside)
-        button.setTitle("Reload page", for: .normal)
-        button.backgroundColor = .orange
-        button.layer.borderWidth = 1
-        button.layer.borderColor = UIColor.gray.cgColor
-        button.setTitleColor(.white, for: .normal)
-        button.titleLabel?.font = UIFont.systemFont(ofSize: 14, weight: .semibold)
+        button.setTitle(UIConstants.reloadButtonTitle, for: .normal)
+        button.backgroundColor = .buttonsSecondary
+        button.layer.borderWidth = UIConstants.buttonsBorderWidthSecondary
+        button.layer.borderColor = .buttonsBorderCGC
+        button.setTitleColor(.textSecondary, for: .normal)
+        button.titleLabel?.font = UIConstants.buttonsLabelFontSecondary
         button.layer.masksToBounds = true
-        button.layer.cornerRadius = 12
+        button.layer.cornerRadius = UIConstants.buttonsCornerRadius
         return button
     }()
     
     private lazy var settingsButton: UIButton = {
-        guard let image = UIImage(systemName: "gearshape.fill") else {
+        guard let image = UIImage(systemName: UIConstants.settingsButtonImageName) else {
             return UIButton()
         }
         let button = UIButton.systemButton(with: image, target: self, action: #selector(self.settingsButtonAction))
         button.addTarget(self, action: #selector(settingsButtonAction), for: .touchUpInside)
-        button.tintColor = .orange
+        button.tintColor = .buttonsSecondary
         button.translatesAutoresizingMaskIntoConstraints = false
         return button
     }()
@@ -81,8 +90,9 @@ class MainViewController: UIViewController {
     }
     
     @objc private func checkButtonAction(_ sender: UIButton) {
-        let numberInputJavaScript = "\(JavaScriptConstants.numberInputJavaScript) '\(cases[sender.tag].caseNumber ?? "")';"
-        let pinInputJavaScript = "\(JavaScriptConstants.pinInputJavaScript) '\(cases[sender.tag].pin ?? "")';"
+        lastCaseChecked = sender.tag
+        let numberInputJavaScript = "\(JavaScriptConstants.numberInputJavaScript) '\(cases[lastCaseChecked].caseNumber ?? "")';"
+        let pinInputJavaScript = "\(JavaScriptConstants.pinInputJavaScript) '\(cases[lastCaseChecked].pin ?? "")';"
         self.webView.evaluateJavaScript(numberInputJavaScript, completionHandler: {(res, error) -> Void in })
         self.webView.evaluateJavaScript(pinInputJavaScript, completionHandler: {(res, error) -> Void in })
         self.webView.evaluateJavaScript(JavaScriptConstants.clickOnButtonJavaScript, completionHandler: {(res, error) -> Void in })
@@ -94,7 +104,7 @@ class MainViewController: UIViewController {
     
     @objc private func settingsButtonAction() {
         guard let window = self.view.window else { fatalError("Invalid Configuration") }
-        window.rootViewController = OnboardingVC()
+        window.rootViewController = UINavigationController(rootViewController: OnboardingVC())
     }
     
     private func setUI() {
@@ -109,47 +119,50 @@ class MainViewController: UIViewController {
         webView.addSubview(progressView)
         
         NSLayoutConstraint.activate([
-            reloadButton.leadingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.leadingAnchor, constant: 10),
-            reloadButton.trailingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.trailingAnchor, constant: -10),
-            reloadButton.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor, constant: -6),
-            reloadButton.heightAnchor.constraint(equalToConstant: 40),
+            reloadButton.leadingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.leadingAnchor, constant: UIConstants.horizontalUIOffsetSecondary),
+            reloadButton.trailingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.trailingAnchor, constant: -UIConstants.horizontalUIOffsetSecondary),
+            reloadButton.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor, constant: -UIConstants.verticalStackViewSpacing),
+            reloadButton.heightAnchor.constraint(equalToConstant: UIConstants.buttonsHeight),
             
-            buttonsStackView.bottomAnchor.constraint(equalTo: reloadButton.topAnchor, constant: -6),
-            buttonsStackView.leadingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.leadingAnchor, constant: 10),
-            buttonsStackView.trailingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.trailingAnchor, constant: -10),
-            buttonsStackView.heightAnchor.constraint(equalToConstant: 40),
+            buttonsStackView.bottomAnchor.constraint(equalTo: reloadButton.topAnchor, constant: -UIConstants.verticalStackViewSpacing),
+            buttonsStackView.leadingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.leadingAnchor, constant: UIConstants.horizontalUIOffsetSecondary),
+            buttonsStackView.trailingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.trailingAnchor, constant: -UIConstants.horizontalUIOffsetSecondary),
+            buttonsStackView.heightAnchor.constraint(equalToConstant: UIConstants.buttonsHeight),
             
             settingsButton.trailingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.trailingAnchor),
-            settingsButton.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: 0),
-            settingsButton.trailingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.trailingAnchor, constant: 0),
-            settingsButton.widthAnchor.constraint(equalToConstant: 50),
+            settingsButton.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor),
+            settingsButton.trailingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.trailingAnchor),
+            settingsButton.widthAnchor.constraint(equalToConstant: UIConstants.buttonsHeightLarge),
             settingsButton.heightAnchor.constraint(equalTo: settingsButton.widthAnchor),
             
             webView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor),
-            webView.bottomAnchor.constraint(equalTo: buttonsStackView.topAnchor, constant: -10),
-            //webView.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor),
+            webView.bottomAnchor.constraint(equalTo: buttonsStackView.topAnchor, constant: -UIConstants.verticalUIOffsetPrimary),
             webView.leadingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.leadingAnchor),
             webView.trailingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.trailingAnchor),
             
             progressView.topAnchor.constraint(equalTo: webView.topAnchor),
             progressView.leadingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.leadingAnchor),
             progressView.trailingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.trailingAnchor),
-            progressView.heightAnchor.constraint(equalToConstant: 2)
+            progressView.heightAnchor.constraint(equalToConstant: UIConstants.buttonsBorderWidthPrimary)
         ])
     }
     
     private func setCheckCaseButton(tag: Int) -> UIButton {
         let button = UIButton(type: .system)
         button.tag = tag
-        button.setTitle("Case \(tag + 1)", for: .normal)
-        
-        button.backgroundColor = .orange
-        button.layer.borderWidth = 1
-        button.layer.borderColor = UIColor.gray.cgColor
-        button.setTitleColor(.white, for: .normal)
-        button.titleLabel?.font = UIFont.systemFont(ofSize: 14, weight: .semibold)
+        button.setTitle(cases[tag].caseName, for: .normal)
+        button.titleLabel?.textAlignment = .center
+        button.titleLabel?.font = UIConstants.buttonsLabelFontTertiary
+        button.titleLabel?.adjustsFontSizeToFitWidth = true
+        button.titleLabel?.minimumScaleFactor = 0.5
+        button.titleLabel?.lineBreakMode = .byClipping
+        button.titleLabel?.numberOfLines = 2
+        button.backgroundColor = .buttonsSecondary
+        button.layer.borderWidth = UIConstants.buttonsBorderWidthSecondary
+        button.layer.borderColor = .buttonsBorderCGC
+        button.setTitleColor(.textSecondary, for: .normal)
         button.layer.masksToBounds = true
-        button.layer.cornerRadius = 12
+        button.layer.cornerRadius = UIConstants.buttonsCornerRadius
         
         button.addTarget(self, action: #selector(checkButtonAction(_:)), for: .touchUpInside)
         return button
@@ -164,7 +177,7 @@ class MainViewController: UIViewController {
         stackView.backgroundColor = .clear
         stackView.axis = .horizontal
         stackView.distribution = .fillEqually
-        stackView.spacing = 4
+        stackView.spacing = UIConstants.buttonsSpacingSmall
         return stackView
     }
     
@@ -180,15 +193,38 @@ class MainViewController: UIViewController {
         var caseName: String?
         var caseNumber: String?
         var pin: String?
+        var history: [HistoryRecord] = []
+        
         for row in 0...4 {
             caseName = UserDefaults.standard.string(forKey: "case\(row)Name")
             caseNumber = UserDefaults.standard.string(forKey: "case\(row)Number")
             pin = UserDefaults.standard.string(forKey: "case\(row)Pin")
-            if caseName != nil || pin != nil {
-                cases.append(.init(caseName: caseName, caseNumber: caseNumber, pin: pin))
+            if let savedData = UserDefaults.standard.data(forKey: "case\(row)History"),
+               let records = try? decoder.decode([HistoryRecord].self, from: savedData) {
+                history = records
+            }                
+            if caseName != nil || caseNumber != nil || pin != nil {
+                cases.append(.init(caseName: caseName, caseNumber: caseNumber, pin: pin, history: history))
             }
+            
         }
         return cases
+    }
+    
+    private func updateCaseHistory() {
+        switch currentMessage {
+        case nil, "":
+            break
+        case cases[lastCaseChecked].history?.last?.record ?? "":
+            break
+        default:
+            var newHistory: [HistoryRecord] = cases[lastCaseChecked].history ?? []
+            newHistory.append(.init(date: Date(), record: currentMessage ?? ""))
+            if let encoded = try? encoder.encode(newHistory) {
+                UserDefaults.standard.set(encoded, forKey: "case\(lastCaseChecked)History")
+            }
+            cases = loadCases()
+        }
     }
     
     private func addMessagesSearchScript() {
@@ -229,7 +265,7 @@ extension MainViewController: WKScriptMessageHandler {
         case "checkMessagesHandler":
             if let data = message.body as? [String: Any],
                let messages = data["messages"] as? [String] {
-                print("@@@:", messages.joined(separator: "\n@@@: "))
+                currentMessage = messages.joined(separator: "\n")
             }
             
         case "pageLoadHandler":
