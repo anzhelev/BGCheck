@@ -8,9 +8,9 @@ enum UIConstants {
     static let buttonsBorderWidthPrimary: CGFloat = 2
     static let buttonsBorderWidthSecondary: CGFloat = 1
     static let titleFontPrimary: UIFont = .systemFont(ofSize: 17, weight: .semibold)
-//    static let titleFontSecondary: UIFont = .systemFont(ofSize: 15, weight: .semibold)
     static let buttonsLabelFontPrimary: UIFont = .systemFont(ofSize: 16, weight: .medium)
     static let buttonsLabelFontSecondary: UIFont = .systemFont(ofSize: 15, weight: .semibold)
+    static let cellLabelFont: UIFont = UIFont.systemFont(ofSize: 14, weight: .semibold)
     static let buttonsLabelFontTertiary: UIFont = .systemFont(ofSize: 14, weight: .regular)
     static let buttonsHeight: CGFloat = 48
     static let buttonsHeightLarge: CGFloat = 52
@@ -43,11 +43,12 @@ enum UIConstants {
     static let addCasesButtonTitle: String = "Add new case"
     static let remindButtonImageNamePrimary: String = "bell.slash"
     static let remindButtonImageNameSecondary: String = "bell.and.waves.left.and.right.fill"
-    static let reminderViewTitle: String = "Reminders"
+    static let reminderViewTitle: String = "Reminder Settings"
     static let reminderViewLabelEnabled: String = "Enabled:"
     static let reminderViewLabelTime: String = "Remind me at:"
-    static let reminderViewLabelDayOfWeek: String = "Day of week:"
-    static let reminderViewLabelDayOfMonth: String = "Day of month:"
+    static let reminderViewLabelFrequency: String = "Every:"
+    static let reminderViewLabelDayOfWeek: String = "On:" //Day of week:"
+    static let reminderViewLabelDayOfMonth: String = "On:"//Day of month:"
     static let reminderViewCloseButtonTitle: String = "xmark"
     static let menuButtonImageNamePrimary: String = "gearshape.fill" // line.horizontal.3 gearshape.fill
     static let menuButtonImageNameSecondary: String = "xmark.circle.fill"
@@ -60,8 +61,13 @@ enum UIConstants {
     static let caseNumberLabelText: String = "№:"
     static let pinLabelText: String = "Pin:"
     static let caseInitialStatusLabelText: String = "Start monitoring"
-    static let frequencyOptions: [String] = ["Day", "Week", "2 Weeks", "Month"]
-    static let weekDays: [String] = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"]
+    static let frequencyOptions: [String] = ["Day", "Week", "Month"] //["Day", "Week", "2 Weeks", "Month"]
+//    static let weekDays: [String] = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"]
+    
+    static let notificationsID: String = "BGStatusCheckNotification"
+    static let reminderAppName = "BG Status Check"
+    static let reminderNotificationText = "Time to check your case status!"
+    
 }
 
 enum JavaScriptConstants {

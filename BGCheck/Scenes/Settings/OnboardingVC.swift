@@ -1,54 +1,44 @@
 import UIKit
 
-class OnboardingVC: UIViewController {
-    
-    // MARK: - Constants
-    
-//    private enum Constants {
-//        static let cornerRadius: CGFloat = 6
-//        static let borderWidth: CGFloat = 1
-//        static let labelFontSize: CGFloat = 15
-//        static let valueFontSize: CGFloat = 16
-//        static let casesViewHeight: CGFloat = 48
-//        static let casesTableCellHeight: CGFloat = 85
-//        static let buttonHeight: CGFloat = 48
-//        static let doneButtonHeight: CGFloat = 48
-//        static let doneButtonWidth: CGFloat = 240
-//        static let leadingOffset: CGFloat = 20
-//        static let spacing: CGFloat = 10
-//        static let smallSpacing: CGFloat = 8
-//        static let maxTextLength: Int = 22
-//        static let minimumTitleLength = 6
-//    }
+class OnboardingVC: UIViewController, KeyboardHandler {
+    // MARK: - Public Properties
+    var keyboardWillShowAction: ((Notification) -> Void)?
+    var keyboardWillHideAction: ((Notification) -> Void)?
     
     // MARK: - Private Properties
     private let viewModel = OnboardingViewModel()
-
-    private let coatOfArmsPicture: UIImageView = {
-        let imageView = UIImageView(image: UIImage(named: "BG"))
-        return imageView
-    }()
     
+    private let coatOfArmsPicture: UIImageView = UIImageView(image: UIImage(named: "BG"))
     private let casesView = UIView()
     private let addCaseButton = UIButton(type: .system)
     private let remindButton = UIButton(type: .system)
     private let doneButton = UIButton(type: .system)
-    private let tableView = UITableView()
+    private let casesTable = UITableView()
     
     // MARK: - Lifecycle
     override func viewDidLoad() {
         super.viewDidLoad()
         
         bindViewModel()
+        setupKeyboardActions()
         hideKeyboardWhenTappedAround()
-        setupTableView()
+        setupCasesTableView()
         setupUI()
     }
     
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
         self.navigationController?.isNavigationBarHidden = true
+        
+        setupKeyboardHandling()
     }
+    
+    override func viewWillDisappear(_ animated: Bool) {
+        super.viewWillDisappear(animated)
+        
+        removeKeyboardHandling()
+    }
+    
     
     // MARK: - Actions
     @objc private func addCaseButtonPressed() {
@@ -56,7 +46,10 @@ class OnboardingVC: UIViewController {
     }
     
     @objc private func addReminderButtonPressed() {
-        let settingsVC = ReminderSettingsVC(storedSettings: viewModel.getStoredNotificationSettings())
+        let settingsVC = ReminderSettingsVC(
+            weekDays: viewModel.getWeekDays(),
+            storedSettings: viewModel.getStoredNotificationSettings()
+        )
         settingsVC.onSave = { settings in
             self.viewModel.updateNotificationSettings(with: settings)
         }
@@ -101,28 +94,29 @@ class OnboardingVC: UIViewController {
         }
     }
     
-    private func setupTableView() {
-        tableView.backgroundColor = .clear
-        tableView.delegate = self
-        tableView.dataSource = self
-        tableView.showsVerticalScrollIndicator = false
-//        tableView.separatorInset = UIConstants.tableSeparatorInset
-        tableView.register(OnboardingTableCell.self, forCellReuseIdentifier: OnboardingTableCell.reuseIdentifier)
-        tableView.separatorStyle = .none
+    private func setupCasesTableView() {
+        casesTable.backgroundColor = .clear
+        casesTable.delegate = self
+        casesTable.dataSource = self
+        casesTable.showsVerticalScrollIndicator = false
+        casesTable.register(OnboardingTableCell.self, forCellReuseIdentifier: OnboardingTableCell.reuseIdentifier)
+        casesTable.separatorStyle = .none
+        casesTable.allowsSelection = false
     }
     
     private func setupUI() {
-        view.backgroundColor = .white
+        view.overrideUserInterfaceStyle = .light
+        view.backgroundColor = .backgroundPrimary
         
         configureAddCasesView()
         configureDoneButton()
         
-        [coatOfArmsPicture, casesView, tableView, doneButton].forEach {
+        [coatOfArmsPicture, casesView, casesTable, doneButton].forEach {
             $0.translatesAutoresizingMaskIntoConstraints = false
             view.addSubview($0)
         }
         
-        [casesView, tableView].forEach {
+        [casesView, casesTable].forEach {
             $0.leadingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.leadingAnchor,
                                         constant: UIConstants.horizontalUIOffset
             ).isActive = true
@@ -137,20 +131,19 @@ class OnboardingVC: UIViewController {
             coatOfArmsPicture.heightAnchor.constraint(equalToConstant: UIConstants.coatOfArmsImageDimension),
             coatOfArmsPicture.heightAnchor.constraint(equalTo: coatOfArmsPicture.widthAnchor),
             
-            
             casesView.topAnchor.constraint(equalTo: coatOfArmsPicture.bottomAnchor, constant: UIConstants.verticalUIOffsetPrimary),
             casesView.heightAnchor.constraint(equalToConstant: UIConstants.buttonsHeight),
             
-            tableView.topAnchor.constraint(equalTo: casesView.bottomAnchor, constant: UIConstants.verticalUIOffsetPrimary),
+            casesTable.topAnchor.constraint(equalTo: casesView.bottomAnchor, constant: UIConstants.verticalUIOffsetPrimary),
             
-            doneButton.topAnchor.constraint(equalTo: tableView.bottomAnchor, constant: UIConstants.verticalUIOffsetPrimary),
+            doneButton.topAnchor.constraint(equalTo: casesTable.bottomAnchor, constant: UIConstants.verticalUIOffsetPrimary),
             doneButton.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor, constant: -UIConstants.bottomUIOffset),
             doneButton.centerXAnchor.constraint(equalTo: view.centerXAnchor),
             doneButton.widthAnchor.constraint(equalToConstant: UIConstants.buttonsWidthPrimary),
             doneButton.heightAnchor.constraint(equalToConstant: UIConstants.buttonsHeight)
         ])
     }
-
+    
     private func configureAddCasesView() {
         let label = UILabel()
         label.textAlignment = .left
@@ -162,11 +155,10 @@ class OnboardingVC: UIViewController {
         configureRemindButton()
         updateAddButtonState()
         updateRemindButtonState(isOn: viewModel.getRemindState())
-                
+        
         [label, addCaseButton, remindButton].forEach {
             $0.translatesAutoresizingMaskIntoConstraints = false
             casesView.addSubview($0)
-            
             $0.centerYAnchor.constraint(equalTo: casesView.centerYAnchor).isActive = true
         }
         
@@ -192,7 +184,6 @@ class OnboardingVC: UIViewController {
         addCaseButton.setTitleColor(.buttonsPrimary, for: .normal)
         addCaseButton.setTitle(UIConstants.addCasesButtonTitle, for: .normal)
         addCaseButton.titleLabel?.font = UIConstants.buttonsLabelFontPrimary
-        
         addCaseButton.addTarget(self, action: #selector(addCaseButtonPressed), for: .touchUpInside)
     }
     
@@ -219,18 +210,18 @@ class OnboardingVC: UIViewController {
     }
     
     private func addItem(at indexPath: IndexPath) {
-        tableView.performBatchUpdates {
-            tableView.insertRows(at: [indexPath], with: .automatic)
+        casesTable.performBatchUpdates {
+            casesTable.insertRows(at: [indexPath], with: .automatic)
         } completion: { _ in
-            self.tableView.reloadData()
+            self.casesTable.reloadData()
         }
     }
     
     private func removeItem(at indexes: [IndexPath]) {
-        tableView.performBatchUpdates {
-            tableView.deleteRows(at: indexes, with: .automatic)
+        casesTable.performBatchUpdates {
+            casesTable.deleteRows(at: indexes, with: .automatic)
         } completion: { _ in
-            self.tableView.reloadData()
+            self.casesTable.reloadData()
         }
     }
     
@@ -250,11 +241,40 @@ class OnboardingVC: UIViewController {
             remindButton.layer.borderColor = .buttonsSecondaryCGC
             remindButton.tintColor = .buttonsSecondary
             
-            
         case false:
             remindButton.setImage(UIImage(systemName: UIConstants.remindButtonImageNamePrimary), for: .normal)
             remindButton.layer.borderColor = .buttonsPrimaryCGC
             remindButton.tintColor = .buttonsPrimary
+        }
+    }
+    
+    private func setupKeyboardActions() {
+        keyboardWillShowAction = { [weak self] notification in
+            guard let userInfo = notification.userInfo,
+                  let keyboardFrame = userInfo[UIResponder.keyboardFrameEndUserInfoKey] as? CGRect,
+                  let duration = userInfo[UIResponder.keyboardAnimationDurationUserInfoKey] as? TimeInterval,
+                  let curve = userInfo[UIResponder.keyboardAnimationCurveUserInfoKey] as? UInt
+            else { return }
+            
+            let keyboardHeight = keyboardFrame.height
+            let contentInsets = UIEdgeInsets(top: 0, left: 0, bottom: keyboardHeight - UIConstants.buttonsHeight, right: 0)
+            
+            UIView.animate(withDuration: duration, delay: 0, options: UIView.AnimationOptions(rawValue: curve)) {
+                self?.casesTable.contentInset = contentInsets
+                self?.casesTable.scrollIndicatorInsets = contentInsets
+            }
+        }
+        
+        keyboardWillHideAction = { [weak self] notification in
+            guard let userInfo = notification.userInfo,
+                  let duration = userInfo[UIResponder.keyboardAnimationDurationUserInfoKey] as? TimeInterval,
+                  let curve = userInfo[UIResponder.keyboardAnimationCurveUserInfoKey] as? UInt
+            else { return }
+            
+            UIView.animate(withDuration: duration, delay: 0, options: UIView.AnimationOptions(rawValue: curve)) {
+                self?.casesTable.contentInset = .zero
+                self?.casesTable.scrollIndicatorInsets = .zero
+            }
         }
     }
 }
@@ -286,10 +306,10 @@ extension OnboardingVC: UITableViewDataSource, UITableViewDelegate {
         tableView.deselectRow(at: indexPath, animated: true)
     }
     
-
+    
     func tableView(_ tableView: UITableView,
                    trailingSwipeActionsConfigurationForRowAt indexPath: IndexPath) -> UISwipeActionsConfiguration? {
-  
+        
         let primaryAction = UIContextualAction(style: .destructive,
                                                title: UIConstants.deleteButtonTitle) { [weak self] (action, view, completionHandler) in
             self?.viewModel.deleteButtonTapped(for: indexPath.row)
@@ -299,7 +319,6 @@ extension OnboardingVC: UITableViewDataSource, UITableViewDelegate {
         
         return UISwipeActionsConfiguration(actions: [primaryAction])
     }
-
 }
 
 // MARK: - UITextFieldDelegate

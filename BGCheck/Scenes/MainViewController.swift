@@ -30,6 +30,7 @@ class MainViewController: UIViewController {
         
         webView.backgroundColor = .backgroundPrimary
         webView.navigationDelegate = self
+        webView.overrideUserInterfaceStyle = .light
         
         return webView
     }()

@@ -18,7 +18,7 @@ class HistoryVC: UIViewController {
     
     override func viewDidLoad() {
         super.viewDidLoad()
-        
+        bindViewModel()
         setupUI()
     }
     
@@ -28,10 +28,22 @@ class HistoryVC: UIViewController {
     }
     
     // MARK: - Private Methods
+    private func bindViewModel() {
+        viewModel.historyVCBinding.bind { [weak self] value in
+            guard let self = self else { return }
+            
+            switch value {
+            case .removeItem(let indexes):
+                self.removeItem(at: indexes)
+            default:
+                break
+            }
+        }
+    }
     private func navBarConfig() {
         let titleView = UILabel()
         titleView.text = viewModel.getCaseName()
-        titleView.textColor = .black
+        titleView.textColor = .textPrimary
         titleView.font = UIConstants.titleFontPrimary
         navigationItem.titleView = titleView
     }
@@ -42,7 +54,6 @@ class HistoryVC: UIViewController {
         historyTableView.dataSource = self
         historyTableView.showsVerticalScrollIndicator = false
         historyTableView.separatorInset = UIConstants.tableSeparatorInset
-//        historyTableView.separatorStyle = .none
         historyTableView.frame = view.bounds
         
         historyTableView.autoresizingMask = [.flexibleWidth, .flexibleHeight]
@@ -50,9 +61,18 @@ class HistoryVC: UIViewController {
     }
     
     private func setupUI() {
+        view.overrideUserInterfaceStyle = .light
         view.backgroundColor = .white
         navBarConfig()
         setupTableView()
+    }
+    
+    private func removeItem(at indexes: [IndexPath]) {
+        historyTableView.performBatchUpdates {
+            historyTableView.deleteRows(at: indexes, with: .automatic)
+        } completion: { _ in
+            self.historyTableView.reloadData()
+        }
     }
 }
 
@@ -63,10 +83,31 @@ extension HistoryVC: UITableViewDelegate, UITableViewDataSource {
 
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let cell = UITableViewCell(style: .subtitle, reuseIdentifier: "HistoryCell")
+        cell.backgroundColor = .clear
         cell.textLabel?.text = viewModel.getEntryDate(at: indexPath.row)
-        cell.textLabel?.font = UIFont.systemFont(ofSize: 13, weight: .regular)
+        cell.textLabel?.font = UIConstants.cellLabelFont
+        cell.textLabel?.textColor = .textPrimary
         cell.detailTextLabel?.text = viewModel.getEntryRecord(at: indexPath.row)
+        cell.detailTextLabel?.font = UIConstants.buttonsLabelFontTertiary
+        cell.detailTextLabel?.textColor = .textTertiary
         cell.detailTextLabel?.numberOfLines = 10
         return cell
+    }
+    
+    func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
+        tableView.deselectRow(at: indexPath, animated: true)
+    }
+    
+    func tableView(_ tableView: UITableView,
+                   trailingSwipeActionsConfigurationForRowAt indexPath: IndexPath) -> UISwipeActionsConfiguration? {
+  
+        let primaryAction = UIContextualAction(style: .destructive,
+                                               title: UIConstants.deleteButtonTitle) { [weak self] (action, view, completionHandler) in
+            self?.viewModel.deleteButtonTapped(for: indexPath.row)
+            completionHandler(true)
+        }
+        primaryAction.backgroundColor = .swipeActionBg
+        
+        return UISwipeActionsConfiguration(actions: [primaryAction])
     }
 }

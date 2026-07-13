@@ -29,17 +29,19 @@ final class ReminderSettingsVC: UIViewController {
     private let saveButton = UIButton(type: .system)
 
     // MARK: - Данные для пикеров
-    private let weekDays = UIConstants.weekDays
-    private let monthDays = Array(1...31).map { "\($0)" }
+    private var weekDays: [String] = []
+    private let monthDays = Array(1...28).map { "\($0)" }
     
      var storedSettings: ReminderSettings?
 
     // MARK: - Замыкание для возврата настроек
     var onSave: ((ReminderSettings) -> Void)?
     
-    init(storedSettings: ReminderSettings) {
+    init(weekDays: [String], storedSettings: ReminderSettings) {
         
         super.init(nibName: nil, bundle: nil)
+        
+        self.weekDays = weekDays
         self.storedSettings = storedSettings
     }
     
@@ -50,7 +52,7 @@ final class ReminderSettingsVC: UIViewController {
     // MARK: - Жизненный цикл
     override func viewDidLoad() {
         super.viewDidLoad()
-        view.backgroundColor = UIColor.black.withAlphaComponent(0.4)
+        view.backgroundColor = .backbroundTertiary
         setupCardView()
         updateVisibility(for: frequencySegmented.selectedSegmentIndex)
         updateEnabledState()
@@ -59,7 +61,7 @@ final class ReminderSettingsVC: UIViewController {
     // MARK: - Настройка карточки
     private func setupCardView() {
         let cardView = UIView()
-        cardView.backgroundColor = .systemBackground
+        cardView.backgroundColor = .backgroundSecondary
         cardView.layer.cornerRadius = UIConstants.reminderViewCornerRadius
         cardView.clipsToBounds = true
         cardView.translatesAutoresizingMaskIntoConstraints = false
@@ -93,11 +95,13 @@ final class ReminderSettingsVC: UIViewController {
         // ------ 1. Заголовок и крестик ------
         let headerStack = UIStackView()
         headerStack.axis = .horizontal
-        headerStack.distribution = .equalSpacing
+        headerStack.distribution = .fill
         headerStack.alignment = .center
 
         titleLabel.text = UIConstants.reminderViewTitle
         titleLabel.font = UIConstants.titleFontPrimary
+        titleLabel.textColor = .textPrimary
+        titleLabel.textAlignment = .center
 
         closeButton.setImage(UIImage(systemName: UIConstants.reminderViewCloseButtonTitle), for: .normal)
         closeButton.tintColor = .buttonsPrimary
@@ -115,6 +119,7 @@ final class ReminderSettingsVC: UIViewController {
 
         enableLabel.text = UIConstants.reminderViewLabelEnabled
         enableLabel.font = UIConstants.buttonsLabelFontPrimary
+        enableLabel.textColor = .textPrimary
 
         enableSwitch.isOn = storedSettings?.isEnabled ?? false
         enableSwitch.addTarget(self, action: #selector(switchChanged), for: .valueChanged)
@@ -132,8 +137,10 @@ final class ReminderSettingsVC: UIViewController {
 
         timeLabel.text = UIConstants.reminderViewLabelTime
         timeLabel.font = UIConstants.buttonsLabelFontPrimary
+        timeLabel.textColor = .textPrimary
 
         timePicker.preferredDatePickerStyle = .compact
+        timePicker.overrideUserInterfaceStyle = .light
         timePicker.datePickerMode = .time
         timePicker.locale = Locale(identifier: "en_US")
         timePicker.setContentHuggingPriority(.defaultHigh, for: .horizontal)
@@ -145,12 +152,14 @@ final class ReminderSettingsVC: UIViewController {
         stack.addArrangedSubview(timeRowStack)
 
         // ------ 4. Заголовок частоты ------
-        frequencyLabel.text = "Repeat every:"
+        frequencyLabel.text = UIConstants.reminderViewLabelFrequency
         frequencyLabel.font = UIConstants.buttonsLabelFontPrimary
+        frequencyLabel.textColor = .textPrimary
         stack.addArrangedSubview(frequencyLabel)
 
         // ------ 5. Переключатель частоты ------
         frequencySegmented.selectedSegmentIndex = storedSettings?.frequency ?? 0
+        frequencySegmented.overrideUserInterfaceStyle = .light
         frequencySegmented.addTarget(self, action: #selector(frequencyChanged), for: .valueChanged)
         stack.addArrangedSubview(frequencySegmented)
 
@@ -161,11 +170,13 @@ final class ReminderSettingsVC: UIViewController {
 
         weeklyLabel.text = UIConstants.reminderViewLabelDayOfWeek
         weeklyLabel.font = UIConstants.buttonsLabelFontPrimary
+        weeklyLabel.textColor = .textPrimary
 
         weeklyPicker.dataSource = self
         weeklyPicker.delegate = self
         weeklyPicker.selectRow(storedSettings?.weekDayIndex ?? 0, inComponent: 0, animated: false)
         weeklyPicker.heightAnchor.constraint(equalToConstant: pickerHeight).isActive = true
+        weeklyPicker.overrideUserInterfaceStyle = .light
         
         weeklyStack.addArrangedSubview(weeklyLabel)
         weeklyStack.addArrangedSubview(weeklyPicker)
@@ -178,12 +189,13 @@ final class ReminderSettingsVC: UIViewController {
 
         monthlyLabel.text = UIConstants.reminderViewLabelDayOfMonth
         monthlyLabel.font = UIConstants.buttonsLabelFontPrimary
+        monthlyLabel.textColor = .textPrimary
 
         monthlyPicker.dataSource = self
         monthlyPicker.delegate = self
         monthlyPicker.selectRow((storedSettings?.monthDay ?? 1) - 1, inComponent: 0, animated: false)
         monthlyPicker.heightAnchor.constraint(equalToConstant: pickerHeight).isActive = true
-
+        monthlyPicker.overrideUserInterfaceStyle = .light
 
         monthlyStack.addArrangedSubview(monthlyLabel)
         monthlyStack.addArrangedSubview(monthlyPicker)
@@ -221,10 +233,8 @@ final class ReminderSettingsVC: UIViewController {
     }
 
     private func updateVisibility(for index: Int) {
-        // Показываем день недели для Week (1) и 2 Weeks (2)
-        weeklyStack.isHidden = index != 1 && index != 2
-        // Показываем число месяца только для Month (3)
-        monthlyStack.isHidden = index != 3
+        weeklyStack.isHidden = index != 1 // && index != 2
+        monthlyStack.isHidden = index != 2
 
         UIView.animate(withDuration: 0.25) {
             self.view.layoutIfNeeded()
