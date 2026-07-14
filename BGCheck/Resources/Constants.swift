@@ -61,7 +61,7 @@ enum UIConstants {
     static let caseNumberLabelText: String = "№:"
     static let pinLabelText: String = "Pin:"
     static let caseInitialStatusLabelText: String = "Start monitoring"
-    static let frequencyOptions: [String] = ["Day", "Week", "Month"] //["Day", "Week", "2 Weeks", "Month"]
+    static let frequencyOptions: [String] =  ["Day", "Week", "2 Weeks", "Month"]//["Day", "Week", "2 Weeks", "Month"] .. ["Day", "Week", "Month"]
 //    static let weekDays: [String] = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"]
     
     static let notificationsID: String = "BGStatusCheckNotification"

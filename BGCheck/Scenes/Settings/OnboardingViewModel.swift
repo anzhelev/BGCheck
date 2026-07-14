@@ -1,6 +1,6 @@
 import Foundation
 //import EventKit
-import UserNotifications
+//import UserNotifications
 
 class OnboardingViewModel {
 
@@ -88,53 +88,78 @@ class OnboardingViewModel {
     }
     
     private func updateReminders(with newSettings: ReminderSettings) {
-        let center = UNUserNotificationCenter.current()
-        
-        center.requestAuthorization(options: [.alert, .sound, .badge]) { granted, error in
-            if granted {
-                print("@@@ Разрешение получено")
-            } else {
-                print("@@@ Разрешение не получено")
-                return
-            }
-        }
         
         switch newSettings.isEnabled {
         case true:
-            let content = UNMutableNotificationContent()
-            content.title = UIConstants.reminderAppName
-            content.body = UIConstants.reminderNotificationText
-            content.sound = .default
-            
-            var dateComponents = DateComponents()
-            dateComponents.hour = Calendar.current.component(.hour, from: newSettings.time)
-            dateComponents.minute = Calendar.current.component(.minute, from: newSettings.time)
-            
-            switch newSettings.frequency {
-            case 1:
-                dateComponents.weekday = newSettings.weekDayIndex + 1
-            case 2:
-                dateComponents.day = newSettings.monthDay
-            default:
-                break
+            ReminderManager.shared.createReminder(
+                title: UIConstants.reminderAppName,
+                targetTime: newSettings.time,
+                frequency: .init(rawValue: newSettings.frequency) ?? .monthly,
+                weekday: newSettings.weekDayIndex + 1,
+                monthDay: newSettings.monthDay,
+                notes: UIConstants.reminderNotificationText
+            ) { success, error in
+                if success {
+                    print("@@@ Напоминание создано")
+                }
             }
-   
-            let trigger = UNCalendarNotificationTrigger(dateMatching: dateComponents, repeats: true)
-            let identifier = UIConstants.notificationsID
-            let request = UNNotificationRequest(identifier: identifier, content: content, trigger: trigger)
-
-            center.add(request) { error in
-                        if let error = error {
-                            print("@@@ Ошибка при добавлении уведомления: \(error.localizedDescription)")
-                        } else {
-                            print("@@@ Уведомление успешно запланировано")
-                        }
-                    }
         case false:
-            center.removePendingNotificationRequests(withIdentifiers: [UIConstants.notificationsID])
-            print("@@@ Уведомления отключены")
-        }
+            ReminderManager.shared.removeReminders(withTitle: UIConstants.reminderAppName) {success, error in
+               success
+                ? print("@@@ Уведомления отключены")
+                : print("@@@ Ошибка при отключении уведомлений: \(String(describing: error))")
+                }
+            }
     }
+    
+//    private func updateReminders1(with newSettings: ReminderSettings) {
+//        let center = UNUserNotificationCenter.current()
+//        
+//        center.requestAuthorization(options: [.alert, .sound, .badge]) { granted, error in
+//            if granted {
+//                print("@@@ Разрешение получено")
+//            } else {
+//                print("@@@ Разрешение не получено")
+//                return
+//            }
+//        }
+//        
+//        switch newSettings.isEnabled {
+//        case true:
+//            let content = UNMutableNotificationContent()
+//            content.title = UIConstants.reminderAppName
+//            content.body = UIConstants.reminderNotificationText
+//            content.sound = .default
+//            
+//            var dateComponents = DateComponents()
+//            dateComponents.hour = Calendar.current.component(.hour, from: newSettings.time)
+//            dateComponents.minute = Calendar.current.component(.minute, from: newSettings.time)
+//            
+//            switch newSettings.frequency {
+//            case 1:
+//                dateComponents.weekday = newSettings.weekDayIndex + 1
+//            case 2:
+//                dateComponents.day = newSettings.monthDay
+//            default:
+//                break
+//            }
+//   
+//            let trigger = UNCalendarNotificationTrigger(dateMatching: dateComponents, repeats: true)
+//            let identifier = UIConstants.notificationsID
+//            let request = UNNotificationRequest(identifier: identifier, content: content, trigger: trigger)
+//
+//            center.add(request) { error in
+//                        if let error = error {
+//                            print("@@@ Ошибка при добавлении уведомления: \(error.localizedDescription)")
+//                        } else {
+//                            print("@@@ Уведомление успешно запланировано")
+//                        }
+//                    }
+//        case false:
+//            center.removePendingNotificationRequests(withIdentifiers: [UIConstants.notificationsID])
+//            print("@@@ Уведомления отключены")
+//        }
+//    }
     
     private func loadCases() -> [Case] {
         var cases: [Case] = []

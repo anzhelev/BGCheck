@@ -233,8 +233,8 @@ final class ReminderSettingsVC: UIViewController {
     }
 
     private func updateVisibility(for index: Int) {
-        weeklyStack.isHidden = index != 1 // && index != 2
-        monthlyStack.isHidden = index != 2
+        weeklyStack.isHidden = index != 1 && index != 2
+        monthlyStack.isHidden = index != 3
 
         UIView.animate(withDuration: 0.25) {
             self.view.layoutIfNeeded()
