@@ -1,7 +1,7 @@
 import UIKit
 import WebKit
 
-class MainViewController: UIViewController {
+class WebViewController: UIViewController {
     private let decoder = JSONDecoder()
     private let encoder = JSONEncoder()
     private var currentLoadedPageName: String?
@@ -42,19 +42,19 @@ class MainViewController: UIViewController {
     private lazy var reloadButton: UIButton = {
         let button = UIButton()
         button.addTarget(self, action: #selector(reloadButtonAction), for: .touchUpInside)
-        button.setTitle(UIConstants.reloadButtonTitle, for: .normal)
+        button.setTitle(.Localized.webViewControllerButtonReload, for: .normal)
         button.backgroundColor = .buttonsSecondary
         button.layer.borderWidth = UIConstants.buttonsBorderWidthSecondary
         button.layer.borderColor = .buttonsBorderCGC
         button.setTitleColor(.textSecondary, for: .normal)
-        button.titleLabel?.font = UIConstants.buttonsLabelFontSecondary
+        button.titleLabel?.font = .buttonsLabelFontSecondary
         button.layer.masksToBounds = true
         button.layer.cornerRadius = UIConstants.buttonsCornerRadius
         return button
     }()
     
     private lazy var settingsButton: UIButton = {
-        guard let image = UIImage(systemName: UIConstants.settingsButtonImageName) else {
+        guard let image = UIImage.webViewControllerSettingsButton else {
             return UIButton()
         }
         let button = UIButton.systemButton(with: image, target: self, action: #selector(self.settingsButtonAction))
@@ -153,7 +153,7 @@ class MainViewController: UIViewController {
         button.tag = tag
         button.setTitle(cases[tag].caseName, for: .normal)
         button.titleLabel?.textAlignment = .center
-        button.titleLabel?.font = UIConstants.buttonsLabelFontTertiary
+        button.titleLabel?.font = .buttonsLabelFontTertiary
         button.titleLabel?.adjustsFontSizeToFitWidth = true
         button.titleLabel?.minimumScaleFactor = 0.5
         button.titleLabel?.lineBreakMode = .byClipping
@@ -246,7 +246,7 @@ class MainViewController: UIViewController {
     }
 }
 
-extension MainViewController: WKNavigationDelegate {
+extension WebViewController: WKNavigationDelegate {
     func webView(_ webView: WKWebView, didStartProvisionalNavigation navigation: WKNavigation!) {
     }
     
@@ -258,7 +258,7 @@ extension MainViewController: WKNavigationDelegate {
     }
 }
 
-extension MainViewController: WKScriptMessageHandler {
+extension WebViewController: WKScriptMessageHandler {
     func userContentController(_ userContentController: WKUserContentController, didReceive message: WKScriptMessage) {
         
         switch message.name {
@@ -281,7 +281,7 @@ extension MainViewController: WKScriptMessageHandler {
     }
 }
 
-extension MainViewController: ClickTrackingWebViewDelegate {
+extension WebViewController: ClickTrackingWebViewDelegate {
     func clickTracked(on point: CGPoint) {
     }
 }

@@ -17,7 +17,26 @@ final class ReminderManager {
     // MARK: - Dependencies
     private let eventStore = EKEventStore()
     private let calendar = Calendar.current
-
+    
+    // MARK: - String Conatants
+    private enum Strings: String {
+        case nsErrorDomain = "ReminderManager"
+        case requestAccessError = "@@@ Request access error:"
+        case accessDenied = "@@@ Reminder access denied or restricted"
+        case dueDateError = "Failed to calculate next due date"
+        case predicateError = "Failed to create NSPredicate"
+        case fetchError = "Failed to fetch reminders"
+        case nothingToDelete = "@@@ No incomplete reminders with title"
+        case weekDayMissing = "Weekday required for weekly recurrence"
+        case monthDayMissing = "Monthday required for monthly recurrence"
+        case defaultCalendarMissing = "Default reminder calendar not found"
+        case remindersRemoved = "@@@ Removed %d reminders with title '%@'"
+        case removeError = "@@@ Remove error:"
+        case commitError = "@@@ Commit error:"
+        case reminderCreated = "@@@ Reminder created, first fire:"
+        case saveError = "@@@ Save error:"
+    }
+    
     // MARK: - Public Methods
     func requestAccess(completion: @escaping (Bool) -> Void) {
         let status = EKEventStore.authorizationStatus(for: .reminder)
@@ -28,13 +47,13 @@ final class ReminderManager {
             eventStore.requestAccess(to: .reminder) { granted, error in
                 DispatchQueue.main.async {
                     if let error = error {
-                        print("@@@ Request access error: \(error.localizedDescription)")
+                        print(Strings.requestAccessError.rawValue, error.localizedDescription)
                     }
                     completion(granted)
                 }
             }
         case .denied, .restricted, .writeOnly:
-            print("@@@ Reminder access denied or restricted")
+            print(Strings.accessDenied.rawValue)
             completion(false)
         default:
             completion(false)
@@ -61,8 +80,8 @@ final class ReminderManager {
                 weekday: weekday,
                 monthDay: monthDay
             ) else {
-                let error = NSError(domain: "ReminderManager", code: 5,
-                                    userInfo: [NSLocalizedDescriptionKey: "Failed to calculate next due date"])
+                let error = NSError(domain: Strings.nsErrorDomain.rawValue, code: 5,
+                                    userInfo: [NSLocalizedDescriptionKey: Strings.dueDateError.rawValue])
                 completion(false, error)
                 return
             }
@@ -86,16 +105,16 @@ final class ReminderManager {
             }
 
             guard let predicate = self?.eventStore.predicateForReminders(in: nil) else {
-                let error = NSError(domain: "ReminderManager", code: 6,
-                                    userInfo: [NSLocalizedDescriptionKey: "Failed to create predicate"])
+                let error = NSError(domain: Strings.nsErrorDomain.rawValue, code: 6,
+                                    userInfo: [NSLocalizedDescriptionKey: Strings.predicateError.rawValue])
                 completion(false, error)
                 return
             }
 
             self?.eventStore.fetchReminders(matching: predicate) { reminders in
                 guard let reminders = reminders else {
-                    let error = NSError(domain: "ReminderManager", code: 7,
-                                        userInfo: [NSLocalizedDescriptionKey: "Failed to fetch reminders"])
+                    let error = NSError(domain: Strings.nsErrorDomain.rawValue, code: 7,
+                                        userInfo: [NSLocalizedDescriptionKey: Strings.fetchError.rawValue])
                     completion(false, error)
                     return
                 }
@@ -105,7 +124,7 @@ final class ReminderManager {
                 }
 
                 if remindersToRemove.isEmpty {
-                    print("@@@ No incomplete reminders with title '\(title)' to remove")
+                    print(Strings.nothingToDelete.rawValue, title)
                     completion(true, nil)
                     return
                 }
@@ -114,16 +133,16 @@ final class ReminderManager {
                     do {
                         try self?.eventStore.remove(reminder, commit: false)
                     } catch {
-                        print("@@@ Remove error: \(error.localizedDescription)")
+                        print(Strings.removeError.rawValue, error.localizedDescription)
                     }
                 }
 
                 do {
                     try self?.eventStore.commit()
-                    print("@@@ Removed \(remindersToRemove.count) reminders with title '\(title)'")
+                    print(String(format: Strings.remindersRemoved.rawValue, remindersToRemove.count, title))
                     completion(true, nil)
                 } catch {
-                    print("@@@ Commit error: \(error.localizedDescription)")
+                    print(Strings.commitError.rawValue, error.localizedDescription)
                     completion(false, error)
                 }
             }
@@ -149,7 +168,7 @@ final class ReminderManager {
                     do {
                         try self?.eventStore.remove(reminder, commit: false)
                     } catch {
-                        print("@@@ Remove error: \(error.localizedDescription)")
+                        print(Strings.removeError.rawValue, error.localizedDescription)
                     }
                 }
                 do {
@@ -229,8 +248,8 @@ final class ReminderManager {
 
         case .weekly:
             guard let wd = weekday else {
-                let error = NSError(domain: "ReminderManager", code: 2,
-                                    userInfo: [NSLocalizedDescriptionKey: "Weekday required for weekly recurrence"])
+                let error = NSError(domain: Strings.nsErrorDomain.rawValue, code: 2,
+                                    userInfo: [NSLocalizedDescriptionKey: Strings.weekDayMissing.rawValue])
                 completion(false, error)
                 return
             }
@@ -250,8 +269,8 @@ final class ReminderManager {
 
         case .biweekly:
             guard let wd = weekday else {
-                let error = NSError(domain: "ReminderManager", code: 3,
-                                    userInfo: [NSLocalizedDescriptionKey: "Weekday required for biweekly recurrence"])
+                let error = NSError(domain: Strings.nsErrorDomain.rawValue, code: 3,
+                                    userInfo: [NSLocalizedDescriptionKey: Strings.weekDayMissing.rawValue])
                 completion(false, error)
                 return
             }
@@ -271,8 +290,8 @@ final class ReminderManager {
 
         case .monthly:
             guard let md = monthDay else {
-                let error = NSError(domain: "ReminderManager", code: 4,
-                                    userInfo: [NSLocalizedDescriptionKey: "Month day required for monthly recurrence"])
+                let error = NSError(domain: Strings.nsErrorDomain.rawValue, code: 4,
+                                    userInfo: [NSLocalizedDescriptionKey: Strings.monthDayMissing.rawValue])
                 completion(false, error)
                 return
             }
@@ -294,8 +313,8 @@ final class ReminderManager {
         }
 
         guard let calendar = eventStore.defaultCalendarForNewReminders() else {
-            let error = NSError(domain: "ReminderManager", code: 1,
-                                userInfo: [NSLocalizedDescriptionKey: "Default reminder calendar not found"])
+            let error = NSError(domain: Strings.nsErrorDomain.rawValue, code: 1,
+                                userInfo: [NSLocalizedDescriptionKey: Strings.defaultCalendarMissing.rawValue])
             completion(false, error)
             return
         }
@@ -303,10 +322,10 @@ final class ReminderManager {
 
         do {
             try eventStore.save(reminder, commit: true)
-            print("@@@ Reminder created, first fire: \(dueDate)")
+            print(Strings.reminderCreated.rawValue, dueDate)
             completion(true, nil)
         } catch {
-            print("@@@ Save error: \(error.localizedDescription)")
+            print(Strings.saveError.rawValue, error.localizedDescription)
             completion(false, error)
         }
     }

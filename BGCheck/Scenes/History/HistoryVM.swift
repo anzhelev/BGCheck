@@ -1,10 +1,3 @@
-//
-//  HistoryVM.swift
-//  BGCheck
-//
-//  Created by Andrey Zhelev on 04.07.2026.
-//
-
 import Foundation
 
 class HistoryVM {
@@ -19,17 +12,14 @@ class HistoryVM {
     
     private lazy var formatter: DateFormatter = {
         let formatter = DateFormatter()
-//        formatter.dateStyle = .short
         formatter.timeStyle = .none
-        formatter.locale = Locale(identifier: "en_US_POSIX")
-        formatter.dateFormat = "yyyy/MM/dd"
+        formatter.dateFormat = .Localized.historyVCDateFormat
         return formatter
     }()
     
     init(number: Int, userCase: Case) {
         self.number = number
         self.userCase = userCase
-//        loadHistory()
     }
     
     // MARK: - Public Methods

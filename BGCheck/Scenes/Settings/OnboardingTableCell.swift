@@ -18,19 +18,19 @@ final class OnboardingTableCell: UITableViewCell {
     
     // MARK: - Private Properties
     private lazy var caseNameTextField: UITextField = createTextField(
-        placeholder: "Enter name",
+        placeholder: .Localized.onboardingVCPlaceholderName,
         action: #selector(
             didChangeCaseNameTextField
         )
     )
     private lazy var caseNumberTextField: UITextField = createTextField(
-        placeholder: "Enter number",
+        placeholder: .Localized.onboardingVCPlaceholderNumber,
         action: #selector(
             didChangeCaseNumberTextField
         )
     )
     private lazy var pinTextField: UITextField = createTextField(
-        placeholder: "Enter pin",
+        placeholder: .Localized.onboardingVCPlaceholderPin,
         action: #selector(
             didChangePinTextField
         )
@@ -38,7 +38,7 @@ final class OnboardingTableCell: UITableViewCell {
     private lazy var historyButton = {
         let button = UIButton(type: .system)
         button.tintColor = .buttonsPrimary
-        button.setImage(UIImage(systemName: "text.pad.header.badge.clock.rtl"), for: .normal)
+        button.setImage(.onboardingVCHistoryButton, for: .normal)
         button.addTarget(self, action: #selector(didTapHistoryButton), for: .touchUpInside)
         return button
     }()
@@ -85,7 +85,7 @@ final class OnboardingTableCell: UITableViewCell {
     private func createLabel(text: String) -> UILabel {
         let label = UILabel()
         label.backgroundColor = .clear
-        label.font = UIConstants.buttonsLabelFontSecondary
+        label.font = .buttonsLabelFontSecondary
         label.textColor = .textPrimary
         label.textAlignment = .right
         label.text = text
@@ -99,7 +99,7 @@ final class OnboardingTableCell: UITableViewCell {
         textField.textAlignment = .left
         textField.delegate = self
 //        textField.addPadding(left: 6, right: 6)
-        textField.font = UIConstants.buttonsLabelFontTertiary
+        textField.font = .buttonsLabelFontTertiary
         textField.textColor = .textPrimary
         textField.attributedPlaceholder = NSAttributedString(
             string: placeholder,
@@ -131,21 +131,21 @@ final class OnboardingTableCell: UITableViewCell {
         self.backgroundColor = .clear
 
         let caseNameStackView = createHStack(
-            arrangedSubviews: [createLabel(text: UIConstants.caseNameLabelText),
+            arrangedSubviews: [createLabel(text: .Localized.onboardingVCLabelCaseName),
                                caseNameTextField
                               ],
             spacing: UIConstants.textLabelSpacing
         )
         
         let caseNumberStackView = createHStack(
-            arrangedSubviews: [createLabel(text: UIConstants.caseNumberLabelText),
+            arrangedSubviews: [createLabel(text: .Localized.onboardingVCLabelCaseNumber),
                                caseNumberTextField
                               ],
             spacing: UIConstants.textLabelSpacing
         )
         
         let pinStackView = createHStack(
-            arrangedSubviews: [createLabel(text: UIConstants.pinLabelText),
+            arrangedSubviews: [createLabel(text: .Localized.onboardingVCLabelCasePin),
                                pinTextField
                               ],
             spacing: UIConstants.textLabelSpacing

@@ -5,6 +5,7 @@ class HistoryVC: UIViewController {
     // MARK: - Private Properties
     private let viewModel: HistoryVM
     private let historyTableView = UITableView()
+    private let cellReuseIdentifier = "HistoryCell"
     
     // MARK: - Initializers
     init(viewModel: HistoryVM) {
@@ -44,7 +45,7 @@ class HistoryVC: UIViewController {
         let titleView = UILabel()
         titleView.text = viewModel.getCaseName()
         titleView.textColor = .textPrimary
-        titleView.font = UIConstants.titleFontPrimary
+        titleView.font = .titleFontPrimary
         navigationItem.titleView = titleView
     }
     
@@ -82,13 +83,13 @@ extension HistoryVC: UITableViewDelegate, UITableViewDataSource {
     }
 
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
-        let cell = UITableViewCell(style: .subtitle, reuseIdentifier: "HistoryCell")
+        let cell = UITableViewCell(style: .subtitle, reuseIdentifier: cellReuseIdentifier)
         cell.backgroundColor = .clear
         cell.textLabel?.text = viewModel.getEntryDate(at: indexPath.row)
-        cell.textLabel?.font = UIConstants.cellLabelFont
+        cell.textLabel?.font = .cellLabelFont
         cell.textLabel?.textColor = .textPrimary
         cell.detailTextLabel?.text = viewModel.getEntryRecord(at: indexPath.row)
-        cell.detailTextLabel?.font = UIConstants.buttonsLabelFontTertiary
+        cell.detailTextLabel?.font = .buttonsLabelFontTertiary
         cell.detailTextLabel?.textColor = .textTertiary
         cell.detailTextLabel?.numberOfLines = 10
         return cell
@@ -102,7 +103,7 @@ extension HistoryVC: UITableViewDelegate, UITableViewDataSource {
                    trailingSwipeActionsConfigurationForRowAt indexPath: IndexPath) -> UISwipeActionsConfiguration? {
   
         let primaryAction = UIContextualAction(style: .destructive,
-                                               title: UIConstants.deleteButtonTitle) { [weak self] (action, view, completionHandler) in
+                                               title: .Localized.onboardingVCButtonDelete) { [weak self] (action, view, completionHandler) in
             self?.viewModel.deleteButtonTapped(for: indexPath.row)
             completionHandler(true)
         }

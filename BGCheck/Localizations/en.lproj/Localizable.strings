@@ -1,0 +1,32 @@
+"app.name" = "BG Status Check";
+"locale.identifier" = "en_US";
+
+"historyVC.formatter.dateFormat" = "yyyy/MM/dd";
+"historyVC.message.startMonitoring" = "Start monitoring";
+
+"onboardingVC.button.addNewCase" = "Add new case";
+"onboardingVC.button.delete" = "Delete";
+"onboardingVC.button.done" = "Done";
+"onboardingVC.label.Cases" = "Cases (up to 5):";
+"onboardingVC.label.caseName" = "Name:";
+"onboardingVC.label.casePin" = "Pin:";
+"onboardingVC.label.case№" = "№:";
+"onboardingVC.placeholder.enterName" = "Enter name";
+"onboardingVC.placeholder.enterNumber" = "Enter number";
+"onboardingVC.placeholder.enterPin" = "Enter pin";
+
+"reminder.message" = "Time to check your case status!";
+
+"reminderView.button.save" = "Save";
+
+"reminderView.label.enabled" = "Enabled:";
+"reminderView.label.setDay" = "On:";
+"reminderView.label.setFrequency" = "Every:";
+"reminderView.label.setTime" = "Remind me at:";
+"reminderView.segmentedControl.2week" = "2 Weeks";
+"reminderView.segmentedControl.day" = "Day";
+"reminderView.segmentedControl.month" = "Month";
+"reminderView.segmentedControl.week" = "Week";
+"reminderView.title" = "Reminder Settings";
+
+"webViewController.button.reload" = "Reload page";

@@ -8,7 +8,7 @@ class OnboardingVC: UIViewController, KeyboardHandler {
     // MARK: - Private Properties
     private let viewModel = OnboardingViewModel()
     
-    private let coatOfArmsPicture: UIImageView = UIImageView(image: UIImage(named: "BG"))
+    private let coatOfArmsPicture: UIImageView = UIImageView(image: .onboardingVCCoatOfArms)
     private let casesView = UIView()
     private let addCaseButton = UIButton(type: .system)
     private let remindButton = UIButton(type: .system)
@@ -38,8 +38,7 @@ class OnboardingVC: UIViewController, KeyboardHandler {
         
         removeKeyboardHandling()
     }
-    
-    
+        
     // MARK: - Actions
     @objc private func addCaseButtonPressed() {
         viewModel.addCase()
@@ -147,9 +146,9 @@ class OnboardingVC: UIViewController, KeyboardHandler {
     private func configureAddCasesView() {
         let label = UILabel()
         label.textAlignment = .left
-        label.font = UIConstants.buttonsLabelFontPrimary
+        label.font = .buttonsLabelFontPrimary
         label.textColor = .black
-        label.text = UIConstants.addCasesLabelText
+        label.text = .Localized.onboardingVCLabelCases
         
         configureAddCaseButton()
         configureRemindButton()
@@ -182,8 +181,8 @@ class OnboardingVC: UIViewController, KeyboardHandler {
         addCaseButton.layer.masksToBounds = true
         addCaseButton.clipsToBounds = true
         addCaseButton.setTitleColor(.buttonsPrimary, for: .normal)
-        addCaseButton.setTitle(UIConstants.addCasesButtonTitle, for: .normal)
-        addCaseButton.titleLabel?.font = UIConstants.buttonsLabelFontPrimary
+        addCaseButton.setTitle(.Localized.onboardingVCButtonAddNewCase, for: .normal)
+        addCaseButton.titleLabel?.font = .buttonsLabelFontPrimary
         addCaseButton.addTarget(self, action: #selector(addCaseButtonPressed), for: .touchUpInside)
     }
     
@@ -204,8 +203,8 @@ class OnboardingVC: UIViewController, KeyboardHandler {
         doneButton.layer.masksToBounds = true
         doneButton.clipsToBounds = true
         doneButton.setTitleColor(.buttonsPrimary, for: .normal)
-        doneButton.setTitle(UIConstants.doneButtonTitle, for: .normal)
-        doneButton.titleLabel?.font = UIConstants.buttonsLabelFontPrimary
+        doneButton.setTitle(.Localized.onboardingVCButtonDone, for: .normal)
+        doneButton.titleLabel?.font = .buttonsLabelFontPrimary
         doneButton.addTarget(self, action: #selector(doneButtonPressed), for: .touchUpInside)
     }
     
@@ -227,7 +226,7 @@ class OnboardingVC: UIViewController, KeyboardHandler {
     
     private func switchToMainView() {
         guard let window = self.view.window else { fatalError("Invalid Configuration") }
-        window.rootViewController = MainViewController()
+        window.rootViewController = WebViewController()
     }
     
     private func updateAddButtonState() {
@@ -237,12 +236,12 @@ class OnboardingVC: UIViewController, KeyboardHandler {
     private func updateRemindButtonState(isOn: Bool) {
         switch isOn {
         case true:
-            remindButton.setImage(UIImage(systemName: UIConstants.remindButtonImageNameSecondary), for: .normal)
+            remindButton.setImage(.onboardingVCRemindButtonActive, for: .normal)
             remindButton.layer.borderColor = .buttonsSecondaryCGC
             remindButton.tintColor = .buttonsSecondary
             
         case false:
-            remindButton.setImage(UIImage(systemName: UIConstants.remindButtonImageNamePrimary), for: .normal)
+            remindButton.setImage(.onboardingVCRemindButtonInactive, for: .normal)
             remindButton.layer.borderColor = .buttonsPrimaryCGC
             remindButton.tintColor = .buttonsPrimary
         }
@@ -311,7 +310,7 @@ extension OnboardingVC: UITableViewDataSource, UITableViewDelegate {
                    trailingSwipeActionsConfigurationForRowAt indexPath: IndexPath) -> UISwipeActionsConfiguration? {
         
         let primaryAction = UIContextualAction(style: .destructive,
-                                               title: UIConstants.deleteButtonTitle) { [weak self] (action, view, completionHandler) in
+                                               title: .Localized.onboardingVCButtonDelete) { [weak self] (action, view, completionHandler) in
             self?.viewModel.deleteButtonTapped(for: indexPath.row)
             completionHandler(true)
         }

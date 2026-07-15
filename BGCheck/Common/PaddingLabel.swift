@@ -1,7 +1,6 @@
 import UIKit
 
 class PaddingLabel: UILabel {
-
     var edgeInset: UIEdgeInsets = .zero
 
     override func drawText(in rect: CGRect) {

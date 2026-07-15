@@ -1,10 +1,3 @@
-//
-//  HistoryViewAssembler.swift
-//  BGCheck
-//
-//  Created by Andrey Zhelev on 04.07.2026.
-//
-
 import UIKit
 
 final class HistoryViewAssembler {

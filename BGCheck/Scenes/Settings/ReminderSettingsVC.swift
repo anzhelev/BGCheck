@@ -15,7 +15,7 @@ final class ReminderSettingsVC: UIViewController {
     private let timePicker = UIDatePicker()
 
     private let frequencyLabel = UILabel()
-    private let frequencySegmented = UISegmentedControl(items: UIConstants.frequencyOptions)
+    private let frequencySegmented = UISegmentedControl(items: String.Localized.reminderViewFrequencyOptions)
 
     private let weeklyStack = UIStackView()
     private let weeklyLabel = UILabel()
@@ -98,12 +98,12 @@ final class ReminderSettingsVC: UIViewController {
         headerStack.distribution = .fill
         headerStack.alignment = .center
 
-        titleLabel.text = UIConstants.reminderViewTitle
-        titleLabel.font = UIConstants.titleFontPrimary
+        titleLabel.text = .Localized.reminderViewTitle
+        titleLabel.font = .titleFontPrimary
         titleLabel.textColor = .textPrimary
         titleLabel.textAlignment = .center
 
-        closeButton.setImage(UIImage(systemName: UIConstants.reminderViewCloseButtonTitle), for: .normal)
+        closeButton.setImage(.reminderViewCloseButton, for: .normal)
         closeButton.tintColor = .buttonsPrimary
         closeButton.addTarget(self, action: #selector(closeTapped), for: .touchUpInside)
 
@@ -117,8 +117,8 @@ final class ReminderSettingsVC: UIViewController {
         enableStack.spacing = UIConstants.buttonsSpacing
         enableStack.alignment = .center
 
-        enableLabel.text = UIConstants.reminderViewLabelEnabled
-        enableLabel.font = UIConstants.buttonsLabelFontPrimary
+        enableLabel.text = .Localized.reminderViewLabelEnabled
+        enableLabel.font = .buttonsLabelFontPrimary
         enableLabel.textColor = .textPrimary
 
         enableSwitch.isOn = storedSettings?.isEnabled ?? false
@@ -135,14 +135,14 @@ final class ReminderSettingsVC: UIViewController {
         timeRowStack.alignment = .center
         timeRowStack.distribution = .fill
 
-        timeLabel.text = UIConstants.reminderViewLabelTime
-        timeLabel.font = UIConstants.buttonsLabelFontPrimary
+        timeLabel.text = .Localized.reminderViewLabelSetTime
+        timeLabel.font = .buttonsLabelFontPrimary
         timeLabel.textColor = .textPrimary
 
         timePicker.preferredDatePickerStyle = .compact
         timePicker.overrideUserInterfaceStyle = .light
         timePicker.datePickerMode = .time
-        timePicker.locale = Locale(identifier: "en_US")
+        timePicker.locale = Locale(identifier: .Localized.localeIdentifier)
         timePicker.setContentHuggingPriority(.defaultHigh, for: .horizontal)
         timePicker.setContentCompressionResistancePriority(.defaultLow, for: .horizontal)
         timePicker.date = storedSettings?.time ?? Date()
@@ -152,8 +152,8 @@ final class ReminderSettingsVC: UIViewController {
         stack.addArrangedSubview(timeRowStack)
 
         // ------ 4. Заголовок частоты ------
-        frequencyLabel.text = UIConstants.reminderViewLabelFrequency
-        frequencyLabel.font = UIConstants.buttonsLabelFontPrimary
+        frequencyLabel.text = .Localized.reminderViewLabelSetFrequency
+        frequencyLabel.font = .buttonsLabelFontPrimary
         frequencyLabel.textColor = .textPrimary
         stack.addArrangedSubview(frequencyLabel)
 
@@ -168,8 +168,8 @@ final class ReminderSettingsVC: UIViewController {
         weeklyStack.spacing = UIConstants.verticalStackViewSpacing
         weeklyStack.isHidden = true
 
-        weeklyLabel.text = UIConstants.reminderViewLabelDayOfWeek
-        weeklyLabel.font = UIConstants.buttonsLabelFontPrimary
+        weeklyLabel.text = .Localized.reminderViewLabelSetDay
+        weeklyLabel.font = .buttonsLabelFontPrimary
         weeklyLabel.textColor = .textPrimary
 
         weeklyPicker.dataSource = self
@@ -187,8 +187,8 @@ final class ReminderSettingsVC: UIViewController {
         monthlyStack.spacing = UIConstants.verticalStackViewSpacing
         monthlyStack.isHidden = true
 
-        monthlyLabel.text = UIConstants.reminderViewLabelDayOfMonth
-        monthlyLabel.font = UIConstants.buttonsLabelFontPrimary
+        monthlyLabel.text = .Localized.reminderViewLabelSetDay
+        monthlyLabel.font = .buttonsLabelFontPrimary
         monthlyLabel.textColor = .textPrimary
 
         monthlyPicker.dataSource = self
@@ -210,8 +210,8 @@ final class ReminderSettingsVC: UIViewController {
         saveButton.layer.masksToBounds = true
         saveButton.clipsToBounds = true
         saveButton.setTitleColor(.buttonsPrimary, for: .normal)
-        saveButton.setTitle("Save", for: .normal)
-        saveButton.titleLabel?.font = UIConstants.buttonsLabelFontPrimary
+        saveButton.setTitle(.Localized.reminderViewButtonSave, for: .normal)
+        saveButton.titleLabel?.font = .buttonsLabelFontPrimary
         saveButton.addTarget(self, action: #selector(saveTapped), for: .touchUpInside)
         saveButton.translatesAutoresizingMaskIntoConstraints = false
         saveButtonContainer.addSubview(saveButton)
