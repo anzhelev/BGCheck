@@ -6,7 +6,7 @@ class OnboardingVC: UIViewController, KeyboardHandler {
     var keyboardWillHideAction: ((Notification) -> Void)?
     
     // MARK: - Private Properties
-    private let viewModel = OnboardingViewModel()
+    private let viewModel = OnboardingVM()
     
     private let coatOfArmsPicture: UIImageView = UIImageView(image: .onboardingVCCoatOfArms)
     private let casesView = UIView()
@@ -117,29 +117,29 @@ class OnboardingVC: UIViewController, KeyboardHandler {
         
         [casesView, casesTable].forEach {
             $0.leadingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.leadingAnchor,
-                                        constant: UIConstants.horizontalUIOffset
+                                        constant: .spacing20
             ).isActive = true
             $0.trailingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.trailingAnchor,
-                                         constant: -UIConstants.horizontalUIOffset
+                                         constant: -.spacing20
             ).isActive = true
         }
         
         NSLayoutConstraint.activate([
-            coatOfArmsPicture.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: UIConstants.topUIOffset),
+            coatOfArmsPicture.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: .spacing10),
             coatOfArmsPicture.centerXAnchor.constraint(equalTo: view.centerXAnchor),
-            coatOfArmsPicture.heightAnchor.constraint(equalToConstant: UIConstants.coatOfArmsImageDimension),
+            coatOfArmsPicture.heightAnchor.constraint(equalToConstant: .coatOfArmsDimension180),
             coatOfArmsPicture.heightAnchor.constraint(equalTo: coatOfArmsPicture.widthAnchor),
             
-            casesView.topAnchor.constraint(equalTo: coatOfArmsPicture.bottomAnchor, constant: UIConstants.verticalUIOffsetPrimary),
-            casesView.heightAnchor.constraint(equalToConstant: UIConstants.buttonsHeight),
+            casesView.topAnchor.constraint(equalTo: coatOfArmsPicture.bottomAnchor, constant: .spacing10),
+            casesView.heightAnchor.constraint(equalToConstant: .buttonsHeight48),
             
-            casesTable.topAnchor.constraint(equalTo: casesView.bottomAnchor, constant: UIConstants.verticalUIOffsetPrimary),
+            casesTable.topAnchor.constraint(equalTo: casesView.bottomAnchor, constant: .spacing10),
             
-            doneButton.topAnchor.constraint(equalTo: casesTable.bottomAnchor, constant: UIConstants.verticalUIOffsetPrimary),
-            doneButton.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor, constant: -UIConstants.bottomUIOffset),
+            doneButton.topAnchor.constraint(equalTo: casesTable.bottomAnchor, constant: .spacing10),
+            doneButton.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor, constant: -.spacing4),
             doneButton.centerXAnchor.constraint(equalTo: view.centerXAnchor),
-            doneButton.widthAnchor.constraint(equalToConstant: UIConstants.buttonsWidthPrimary),
-            doneButton.heightAnchor.constraint(equalToConstant: UIConstants.buttonsHeight)
+            doneButton.widthAnchor.constraint(equalToConstant: .buttonsWidth240),
+            doneButton.heightAnchor.constraint(equalToConstant: .buttonsHeight48)
         ])
     }
     
@@ -163,21 +163,21 @@ class OnboardingVC: UIViewController, KeyboardHandler {
         
         NSLayoutConstraint.activate([
             label.leadingAnchor.constraint(equalTo: casesView.leadingAnchor),
-            addCaseButton.leadingAnchor.constraint(equalTo: label.trailingAnchor, constant: UIConstants.buttonsSpacing),
-            addCaseButton.widthAnchor.constraint(equalToConstant: UIConstants.buttonsWidthSecondary),
-            addCaseButton.heightAnchor.constraint(equalToConstant: UIConstants.buttonsHeight),
+            addCaseButton.leadingAnchor.constraint(equalTo: label.trailingAnchor, constant: .spacing10),
+            addCaseButton.widthAnchor.constraint(equalToConstant: .buttonsWidth120),
+            addCaseButton.heightAnchor.constraint(equalToConstant: .buttonsHeight48),
             remindButton.trailingAnchor.constraint(equalTo: casesView.trailingAnchor),
-            remindButton.leadingAnchor.constraint(equalTo: addCaseButton.trailingAnchor, constant: UIConstants.buttonsSpacing),
-            remindButton.widthAnchor.constraint(equalToConstant: UIConstants.buttonsWidthTertiary),
-            remindButton.heightAnchor.constraint(equalToConstant: UIConstants.buttonsHeight)
+            remindButton.leadingAnchor.constraint(equalTo: addCaseButton.trailingAnchor, constant: .spacing10),
+            remindButton.widthAnchor.constraint(equalToConstant: .buttonsWidth60),
+            remindButton.heightAnchor.constraint(equalToConstant: .buttonsHeight48)
         ])
     }
     
     private func configureAddCaseButton() {
         addCaseButton.backgroundColor = .clear
-        addCaseButton.layer.borderWidth = UIConstants.buttonsBorderWidthPrimary
+        addCaseButton.layer.borderWidth = .borderWidth2
         addCaseButton.layer.borderColor = UIColor.buttonsPrimary.cgColor
-        addCaseButton.layer.cornerRadius = UIConstants.buttonsCornerRadius
+        addCaseButton.layer.cornerRadius = .cornerRadius16
         addCaseButton.layer.masksToBounds = true
         addCaseButton.clipsToBounds = true
         addCaseButton.setTitleColor(.buttonsPrimary, for: .normal)
@@ -188,8 +188,8 @@ class OnboardingVC: UIViewController, KeyboardHandler {
     
     private func configureRemindButton() {
         remindButton.backgroundColor = .clear
-        remindButton.layer.borderWidth = UIConstants.buttonsBorderWidthPrimary
-        remindButton.layer.cornerRadius = UIConstants.buttonsCornerRadius
+        remindButton.layer.borderWidth = .borderWidth2
+        remindButton.layer.cornerRadius = .cornerRadius16
         remindButton.layer.masksToBounds = true
         remindButton.clipsToBounds = true
         remindButton.addTarget(self, action: #selector(addReminderButtonPressed), for: .touchUpInside)
@@ -197,9 +197,9 @@ class OnboardingVC: UIViewController, KeyboardHandler {
     
     private func configureDoneButton() {
         doneButton.backgroundColor = .clear
-        doneButton.layer.borderWidth = UIConstants.buttonsBorderWidthPrimary
+        doneButton.layer.borderWidth = .borderWidth2
         doneButton.layer.borderColor = UIColor.buttonsPrimary.cgColor
-        doneButton.layer.cornerRadius = UIConstants.buttonsCornerRadius
+        doneButton.layer.cornerRadius = .cornerRadius16
         doneButton.layer.masksToBounds = true
         doneButton.clipsToBounds = true
         doneButton.setTitleColor(.buttonsPrimary, for: .normal)
@@ -226,7 +226,7 @@ class OnboardingVC: UIViewController, KeyboardHandler {
     
     private func switchToMainView() {
         guard let window = self.view.window else { fatalError("Invalid Configuration") }
-        window.rootViewController = WebViewController()
+        window.rootViewController = WebViewVC()
     }
     
     private func updateAddButtonState() {
@@ -256,7 +256,7 @@ class OnboardingVC: UIViewController, KeyboardHandler {
             else { return }
             
             let keyboardHeight = keyboardFrame.height
-            let contentInsets = UIEdgeInsets(top: 0, left: 0, bottom: keyboardHeight - UIConstants.buttonsHeight, right: 0)
+            let contentInsets = UIEdgeInsets(top: 0, left: 0, bottom: keyboardHeight - .buttonsHeight48, right: 0)
             
             UIView.animate(withDuration: duration, delay: 0, options: UIView.AnimationOptions(rawValue: curve)) {
                 self?.casesTable.contentInset = contentInsets
@@ -285,7 +285,7 @@ extension OnboardingVC: UITableViewDataSource, UITableViewDelegate {
     }
     
     func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
-        UIConstants.casesTableCellHeight
+        .cellHeight85
     }
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
@@ -330,6 +330,6 @@ extension OnboardingVC: UITextFieldDelegate {
     func textField(_ textField: UITextField, shouldChangeCharactersIn range: NSRange, replacementString string: String) -> Bool {
         guard let text = textField.text else { return true }
         let newLength = text.count + string.count - range.length
-        return newLength <= UIConstants.cellsTextFieldsMaxTextLength
+        return newLength <= .maxTextLength22
     }
 }

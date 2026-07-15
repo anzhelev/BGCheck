@@ -6,13 +6,14 @@ class HistoryVC: UIViewController {
     private let viewModel: HistoryVM
     private let historyTableView = UITableView()
     private let cellReuseIdentifier = "HistoryCell"
+    private let tableSeparatorInset: UIEdgeInsets = .init(top: 0, left: 10, bottom: 0, right: 10)
     
     // MARK: - Initializers
     init(viewModel: HistoryVM) {
         self.viewModel = viewModel
         super.init(nibName: nil, bundle: nil)
     }
-
+    
     required init?(coder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }
@@ -54,7 +55,7 @@ class HistoryVC: UIViewController {
         historyTableView.delegate = self
         historyTableView.dataSource = self
         historyTableView.showsVerticalScrollIndicator = false
-        historyTableView.separatorInset = UIConstants.tableSeparatorInset
+        historyTableView.separatorInset = tableSeparatorInset
         historyTableView.frame = view.bounds
         
         historyTableView.autoresizingMask = [.flexibleWidth, .flexibleHeight]
@@ -81,7 +82,7 @@ extension HistoryVC: UITableViewDelegate, UITableViewDataSource {
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         return viewModel.getHistoryCount()
     }
-
+    
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let cell = UITableViewCell(style: .subtitle, reuseIdentifier: cellReuseIdentifier)
         cell.backgroundColor = .clear
@@ -101,7 +102,7 @@ extension HistoryVC: UITableViewDelegate, UITableViewDataSource {
     
     func tableView(_ tableView: UITableView,
                    trailingSwipeActionsConfigurationForRowAt indexPath: IndexPath) -> UISwipeActionsConfiguration? {
-  
+        
         let primaryAction = UIContextualAction(style: .destructive,
                                                title: .Localized.onboardingVCButtonDelete) { [weak self] (action, view, completionHandler) in
             self?.viewModel.deleteButtonTapped(for: indexPath.row)

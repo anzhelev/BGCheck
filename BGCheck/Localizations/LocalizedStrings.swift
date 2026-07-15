@@ -11,7 +11,7 @@ extension String {
         static let onboardingVCButtonAddNewCase = NSLocalizedString("onboardingVC.button.addNewCase", comment: "")
         static let onboardingVCButtonDelete = NSLocalizedString("onboardingVC.button.delete", comment: "")
         static let onboardingVCButtonDone = NSLocalizedString("onboardingVC.button.done", comment: "")
-
+        
         static let onboardingVCLabelCases = NSLocalizedString("onboardingVC.label.Cases", comment: "")
         static let onboardingVCLabelCaseName = NSLocalizedString("onboardingVC.label.caseName", comment: "")
         static let onboardingVCLabelCasePin = NSLocalizedString("onboardingVC.label.casePin", comment: "")
@@ -35,6 +35,7 @@ extension String {
         ]
         static let reminderViewTitle = NSLocalizedString("reminderView.title", comment: "")
         
-        static let webViewControllerButtonReload = NSLocalizedString("webViewController.button.reload", comment: "")
+        static let webViewVCLabelCase = NSLocalizedString("webViewVC.label.case", comment: "")
+        static let webViewVCButtonReload = NSLocalizedString("webViewVC.button.reload", comment: "")
     }
 }

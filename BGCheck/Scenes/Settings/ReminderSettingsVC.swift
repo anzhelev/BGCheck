@@ -24,7 +24,7 @@ final class ReminderSettingsVC: UIViewController {
     private let monthlyStack = UIStackView()
     private let monthlyLabel = UILabel()
     private let monthlyPicker = UIPickerView()
-    private let pickerHeight: CGFloat = UIConstants.buttonsWidthSecondary
+    private let pickerHeight: CGFloat = .buttonsWidth120
 
     private let saveButton = UIButton(type: .system)
 
@@ -62,7 +62,7 @@ final class ReminderSettingsVC: UIViewController {
     private func setupCardView() {
         let cardView = UIView()
         cardView.backgroundColor = .backgroundSecondary
-        cardView.layer.cornerRadius = UIConstants.reminderViewCornerRadius
+        cardView.layer.cornerRadius = .cornerRadius16
         cardView.clipsToBounds = true
         cardView.translatesAutoresizingMaskIntoConstraints = false
         view.addSubview(cardView)
@@ -80,16 +80,16 @@ final class ReminderSettingsVC: UIViewController {
     private func setupContent(in container: UIView) {
         let stack = UIStackView()
         stack.axis = .vertical
-        stack.spacing = UIConstants.verticalUIOffsetTertiary
+        stack.spacing = .spacing16
         stack.alignment = .fill
         stack.translatesAutoresizingMaskIntoConstraints = false
         container.addSubview(stack)
 
         NSLayoutConstraint.activate([
-            stack.topAnchor.constraint(equalTo: container.topAnchor, constant: UIConstants.horizontalUIOffset),
-            stack.leadingAnchor.constraint(equalTo: container.leadingAnchor, constant: UIConstants.horizontalUIOffset),
-            stack.trailingAnchor.constraint(equalTo: container.trailingAnchor, constant: -UIConstants.horizontalUIOffset),
-            stack.bottomAnchor.constraint(lessThanOrEqualTo: container.bottomAnchor, constant: -UIConstants.horizontalUIOffset)
+            stack.topAnchor.constraint(equalTo: container.topAnchor, constant: .spacing20),
+            stack.leadingAnchor.constraint(equalTo: container.leadingAnchor, constant: .spacing20),
+            stack.trailingAnchor.constraint(equalTo: container.trailingAnchor, constant: -.spacing20),
+            stack.bottomAnchor.constraint(lessThanOrEqualTo: container.bottomAnchor, constant: -.spacing20)
         ])
 
         // ------ 1. Заголовок и крестик ------
@@ -114,7 +114,7 @@ final class ReminderSettingsVC: UIViewController {
         // ------ 2. Включение/выключение ------
         let enableStack = UIStackView()
         enableStack.axis = .horizontal
-        enableStack.spacing = UIConstants.buttonsSpacing
+        enableStack.spacing = .spacing10
         enableStack.alignment = .center
 
         enableLabel.text = .Localized.reminderViewLabelEnabled
@@ -131,7 +131,7 @@ final class ReminderSettingsVC: UIViewController {
 
         // ------ 3. Время (компактная строка) ------
         timeRowStack.axis = .horizontal
-        timeRowStack.spacing = UIConstants.buttonsSpacing
+        timeRowStack.spacing = .spacing10
         timeRowStack.alignment = .center
         timeRowStack.distribution = .fill
 
@@ -165,7 +165,7 @@ final class ReminderSettingsVC: UIViewController {
 
         // ------ 6. Еженедельные настройки (для Week и 2 Weeks) ------
         weeklyStack.axis = .vertical
-        weeklyStack.spacing = UIConstants.verticalStackViewSpacing
+        weeklyStack.spacing = .spacing8
         weeklyStack.isHidden = true
 
         weeklyLabel.text = .Localized.reminderViewLabelSetDay
@@ -184,7 +184,7 @@ final class ReminderSettingsVC: UIViewController {
 
         // ------ 7. Ежемесячные настройки (только для Month) ------
         monthlyStack.axis = .vertical
-        monthlyStack.spacing = UIConstants.verticalStackViewSpacing
+        monthlyStack.spacing = .spacing8
         monthlyStack.isHidden = true
 
         monthlyLabel.text = .Localized.reminderViewLabelSetDay
@@ -204,9 +204,9 @@ final class ReminderSettingsVC: UIViewController {
         // ------ 8. Кнопка сохранения ------
         let saveButtonContainer = UIView()
         saveButton.backgroundColor = .clear
-        saveButton.layer.borderWidth = UIConstants.buttonsBorderWidthPrimary
+        saveButton.layer.borderWidth = .borderWidth2
         saveButton.layer.borderColor = UIColor.buttonsPrimary.cgColor
-        saveButton.layer.cornerRadius = UIConstants.buttonsCornerRadius
+        saveButton.layer.cornerRadius = .cornerRadius16
         saveButton.layer.masksToBounds = true
         saveButton.clipsToBounds = true
         saveButton.setTitleColor(.buttonsPrimary, for: .normal)
@@ -220,8 +220,8 @@ final class ReminderSettingsVC: UIViewController {
             saveButton.centerXAnchor.constraint(equalTo: saveButtonContainer.centerXAnchor),
             saveButton.centerYAnchor.constraint(equalTo: saveButtonContainer.centerYAnchor),
             saveButton.topAnchor.constraint(equalTo: saveButtonContainer.topAnchor),
-            saveButton.widthAnchor.constraint(equalToConstant: UIConstants.buttonsWidthPrimary),
-            saveButtonContainer.heightAnchor.constraint(equalToConstant: UIConstants.buttonsHeight)
+            saveButton.widthAnchor.constraint(equalToConstant: .buttonsWidth240),
+            saveButtonContainer.heightAnchor.constraint(equalToConstant: .buttonsHeight48)
         ])
         
         stack.addArrangedSubview(saveButtonContainer)

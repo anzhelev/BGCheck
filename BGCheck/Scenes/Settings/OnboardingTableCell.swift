@@ -98,7 +98,6 @@ final class OnboardingTableCell: UITableViewCell {
         textField.borderStyle = .none
         textField.textAlignment = .left
         textField.delegate = self
-//        textField.addPadding(left: 6, right: 6)
         textField.font = .buttonsLabelFontTertiary
         textField.textColor = .textPrimary
         textField.attributedPlaceholder = NSAttributedString(
@@ -134,21 +133,21 @@ final class OnboardingTableCell: UITableViewCell {
             arrangedSubviews: [createLabel(text: .Localized.onboardingVCLabelCaseName),
                                caseNameTextField
                               ],
-            spacing: UIConstants.textLabelSpacing
+            spacing: .spacing8
         )
         
         let caseNumberStackView = createHStack(
             arrangedSubviews: [createLabel(text: .Localized.onboardingVCLabelCaseNumber),
                                caseNumberTextField
                               ],
-            spacing: UIConstants.textLabelSpacing
+            spacing: .spacing8
         )
         
         let pinStackView = createHStack(
             arrangedSubviews: [createLabel(text: .Localized.onboardingVCLabelCasePin),
                                pinTextField
                               ],
-            spacing: UIConstants.textLabelSpacing
+            spacing: .spacing8
         )
         
         let mainVStack = createVStack(
@@ -157,20 +156,20 @@ final class OnboardingTableCell: UITableViewCell {
                 caseNumberStackView,
                 pinStackView
             ],
-            spacing: UIConstants.textLabelSpacing
+            spacing: .spacing8
         )
         
         let mainHStack = createHStack(
             arrangedSubviews: [mainVStack,
                                historyButton
                               ],
-            spacing: UIConstants.textLabelSpacing
+            spacing: .spacing8
         )
         
         let mainCellView = UIView()
         mainCellView.backgroundColor = .backgroundSecondary
         mainCellView.layer.masksToBounds = true
-        mainCellView.layer.cornerRadius = UIConstants.tableCellCornerRadius
+        mainCellView.layer.cornerRadius = .cornerRadius12
         mainCellView.layer.borderWidth = 0
         
         [mainCellView, mainHStack].forEach {
@@ -183,14 +182,14 @@ final class OnboardingTableCell: UITableViewCell {
         NSLayoutConstraint.activate([
             mainCellView.leadingAnchor.constraint(equalTo: contentView.leadingAnchor),
             mainCellView.trailingAnchor.constraint(equalTo: contentView.trailingAnchor),
-            mainCellView.topAnchor.constraint(equalTo: contentView.topAnchor, constant: 2),
-            mainCellView.bottomAnchor.constraint(equalTo: contentView.bottomAnchor, constant: -3),
+            mainCellView.topAnchor.constraint(equalTo: contentView.topAnchor, constant: .spacing2),
+            mainCellView.bottomAnchor.constraint(equalTo: contentView.bottomAnchor, constant: -.spacing3),
             
-            mainVStack.widthAnchor.constraint(equalTo: mainCellView.widthAnchor, multiplier: 0.75),
-            mainHStack.topAnchor.constraint(equalTo: mainCellView.topAnchor, constant: 8),
-            mainHStack.bottomAnchor.constraint(equalTo: mainCellView.bottomAnchor, constant: -8),
-            mainHStack.leadingAnchor.constraint(equalTo: mainCellView.leadingAnchor, constant: 10),
-            mainHStack.trailingAnchor.constraint(equalTo: mainCellView.trailingAnchor, constant: -10)
+            mainVStack.widthAnchor.constraint(equalTo: mainCellView.widthAnchor, multiplier: .multiplier075),
+            mainHStack.topAnchor.constraint(equalTo: mainCellView.topAnchor, constant: .spacing8),
+            mainHStack.bottomAnchor.constraint(equalTo: mainCellView.bottomAnchor, constant: -.spacing8),
+            mainHStack.leadingAnchor.constraint(equalTo: mainCellView.leadingAnchor, constant: .spacing10),
+            mainHStack.trailingAnchor.constraint(equalTo: mainCellView.trailingAnchor, constant: -.spacing10)
         ])
     }
 }
@@ -209,6 +208,6 @@ extension OnboardingTableCell: UITextFieldDelegate {
     func textField(_ textField: UITextField, shouldChangeCharactersIn range: NSRange, replacementString string: String) -> Bool {
         guard let text = textField.text else { return true }
         let newLength = text.count + string.count - range.length
-        return newLength <= UIConstants.maxTextleLenght
+        return newLength <= .maxTextlenght20
     }
 }

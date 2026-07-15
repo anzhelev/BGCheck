@@ -14,14 +14,14 @@ extension KeyboardHandler where Self: UIViewController {
             object: nil,
             queue: .main) { [weak self] notification in
                 self?.keyboardWillShowAction?(notification)
-        }
+            }
         
         NotificationCenter.default.addObserver(
             forName: UIResponder.keyboardWillHideNotification,
             object: nil,
             queue: .main) { [weak self] notification in
                 self?.keyboardWillHideAction?(notification)
-        }
+            }
     }
     
     func removeKeyboardHandling() {

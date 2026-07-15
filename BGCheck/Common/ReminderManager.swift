@@ -9,11 +9,11 @@ enum ReminderFrequency: Int {
 }
 
 final class ReminderManager {
-
+    
     // MARK: - Singleton
     static let shared = ReminderManager()
     private init() {}
-
+    
     // MARK: - Dependencies
     private let eventStore = EKEventStore()
     private let calendar = Calendar.current
@@ -59,7 +59,7 @@ final class ReminderManager {
             completion(false)
         }
     }
-
+    
     func createReminder(
         title: String,
         targetTime: Date,
@@ -96,21 +96,21 @@ final class ReminderManager {
             )
         }
     }
-
+    
     func removeReminders(withTitle title: String, completion: @escaping (Bool, Error?) -> Void) {
         requestAccess { [weak self] granted in
             guard granted else {
                 completion(false, nil)
                 return
             }
-
+            
             guard let predicate = self?.eventStore.predicateForReminders(in: nil) else {
                 let error = NSError(domain: Strings.nsErrorDomain.rawValue, code: 6,
                                     userInfo: [NSLocalizedDescriptionKey: Strings.predicateError.rawValue])
                 completion(false, error)
                 return
             }
-
+            
             self?.eventStore.fetchReminders(matching: predicate) { reminders in
                 guard let reminders = reminders else {
                     let error = NSError(domain: Strings.nsErrorDomain.rawValue, code: 7,
@@ -118,17 +118,17 @@ final class ReminderManager {
                     completion(false, error)
                     return
                 }
-
+                
                 let remindersToRemove = reminders.filter {
                     !$0.isCompleted && $0.title == title
                 }
-
+                
                 if remindersToRemove.isEmpty {
                     print(Strings.nothingToDelete.rawValue, title)
                     completion(true, nil)
                     return
                 }
-
+                
                 for reminder in remindersToRemove {
                     do {
                         try self?.eventStore.remove(reminder, commit: false)
@@ -136,7 +136,7 @@ final class ReminderManager {
                         print(Strings.removeError.rawValue, error.localizedDescription)
                     }
                 }
-
+                
                 do {
                     try self?.eventStore.commit()
                     print(String(format: Strings.remindersRemoved.rawValue, remindersToRemove.count, title))
@@ -148,7 +148,7 @@ final class ReminderManager {
             }
         }
     }
-
+    
     func removeAllReminders(completion: @escaping (Bool, Error?) -> Void) {
         requestAccess { [weak self] granted in
             guard granted else {
@@ -180,7 +180,7 @@ final class ReminderManager {
             }
         }
     }
-
+    
     // MARK: - Private Methods
     private func computeNextDueDate(
         from targetTime: Date,
@@ -194,7 +194,7 @@ final class ReminderManager {
         matchingComponents.hour = components.hour
         matchingComponents.minute = components.minute
         matchingComponents.second = 0
-
+        
         switch frequency {
         case .daily:
             break
@@ -205,7 +205,7 @@ final class ReminderManager {
             guard let md = monthDay else { return nil }
             matchingComponents.day = md
         }
-
+        
         guard let nextDate = calendar.nextDate(
             after: now,
             matching: matchingComponents,
@@ -216,7 +216,7 @@ final class ReminderManager {
         }
         return nextDate
     }
-
+    
     private func saveReminder(
         title: String,
         dueDate: Date,
@@ -229,15 +229,15 @@ final class ReminderManager {
         let reminder = EKReminder(eventStore: eventStore)
         reminder.title = title
         reminder.notes = notes
-
+        
         let dueComponents = calendar.dateComponents([.year, .month, .day, .hour, .minute], from: dueDate)
         reminder.dueDateComponents = dueComponents
-
+        
         let alarm = EKAlarm(absoluteDate: dueDate)
         reminder.addAlarm(alarm)
-
+        
         var recurrenceRule: EKRecurrenceRule?
-
+        
         switch frequency {
         case .daily:
             recurrenceRule = EKRecurrenceRule(
@@ -245,7 +245,7 @@ final class ReminderManager {
                 interval: 1,
                 end: nil
             )
-
+            
         case .weekly:
             guard let wd = weekday else {
                 let error = NSError(domain: Strings.nsErrorDomain.rawValue, code: 2,
@@ -266,7 +266,7 @@ final class ReminderManager {
                 setPositions: nil,
                 end: nil
             )
-
+            
         case .biweekly:
             guard let wd = weekday else {
                 let error = NSError(domain: Strings.nsErrorDomain.rawValue, code: 3,
@@ -287,7 +287,7 @@ final class ReminderManager {
                 setPositions: nil,
                 end: nil
             )
-
+            
         case .monthly:
             guard let md = monthDay else {
                 let error = NSError(domain: Strings.nsErrorDomain.rawValue, code: 4,
@@ -307,11 +307,11 @@ final class ReminderManager {
                 end: nil
             )
         }
-
+        
         if let rule = recurrenceRule {
             reminder.recurrenceRules = [rule]
         }
-
+        
         guard let calendar = eventStore.defaultCalendarForNewReminders() else {
             let error = NSError(domain: Strings.nsErrorDomain.rawValue, code: 1,
                                 userInfo: [NSLocalizedDescriptionKey: Strings.defaultCalendarMissing.rawValue])
@@ -319,7 +319,7 @@ final class ReminderManager {
             return
         }
         reminder.calendar = calendar
-
+        
         do {
             try eventStore.save(reminder, commit: true)
             print(Strings.reminderCreated.rawValue, dueDate)
@@ -329,7 +329,7 @@ final class ReminderManager {
             completion(false, error)
         }
     }
-
+    
     // MARK: - Helpers
     private static func ekWeekday(from intValue: Int) -> EKWeekday {
         switch intValue {

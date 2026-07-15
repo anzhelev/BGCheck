@@ -29,4 +29,5 @@
 "reminderView.segmentedControl.week" = "Week";
 "reminderView.title" = "Reminder Settings";
 
-"webViewController.button.reload" = "Reload page";
+"webViewVC.label.case" = "Case";
+"webViewVC.button.reload" = "Reload page";

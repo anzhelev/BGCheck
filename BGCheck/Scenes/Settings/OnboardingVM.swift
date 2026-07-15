@@ -2,7 +2,7 @@ import Foundation
 //import EventKit
 //import UserNotifications
 
-class OnboardingViewModel {
+class OnboardingVM {
 
     // MARK: - Public Properties
     var onboardingVCBinding: Observable<OnboardingVCBinding> = Observable(nil)
@@ -247,7 +247,7 @@ class OnboardingViewModel {
 }
 
 // MARK: - MainTableCellDelegate
-extension OnboardingViewModel: OnboardingTableCellDelegate {
+extension OnboardingVM: OnboardingTableCellDelegate {
     func caseNameChanged(to newName: String, for row: Int) {
         cases[row] = .init(
             caseName: newName,

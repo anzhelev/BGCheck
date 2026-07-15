@@ -16,7 +16,7 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
         let shouldSkipOnboarding = UserDefaults.standard.bool(forKey: "storedCases")
         
         return shouldSkipOnboarding
-        ? WebViewController()
+        ? WebViewVC()
         : UINavigationController(rootViewController: OnboardingVC())
     }
     
