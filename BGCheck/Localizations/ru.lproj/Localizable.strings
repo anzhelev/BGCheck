@@ -1,0 +1,34 @@
+"app.name" = "BG Status Check";
+"locale.identifier" = "ru_RU";
+
+"historyVC.formatter.dateFormat" = "dd.MM.yyyy";
+"historyVC.message.startMonitoring" = "Начало отслеживания";
+
+"onboardingVC.button.addNewCase" = "Новое дело";
+"onboardingVC.button.delete" = "Удалить";
+"onboardingVC.button.done" = "Готово";
+"onboardingVC.label.Cases" = "Дела (до 5):";
+"onboardingVC.label.caseName" = "Имя:";
+"onboardingVC.label.casePin" = "Пин:";
+"onboardingVC.label.case№" = "№:";
+"onboardingVC.placeholder.enterName" = "Введите имя";
+"onboardingVC.placeholder.enterNumber" = "Введите номер";
+"onboardingVC.placeholder.enterPin" = "Введите пин";
+
+"reminder.message" = "Пора проверить статус вашего дела.";
+
+"reminderView.button.save" = "Сохранить";
+
+"reminderView.label.enabled" = "Включены:";
+"reminderView.label.setDayOfWeek" = "День недели:";
+"reminderView.label.setDayOfMonth" = "Число месяца:";
+"reminderView.label.setFrequency" = "Повторять раз в:";
+"reminderView.label.setTime" = "Напомнить в:";
+"reminderView.segmentedControl.2week" = "2 Недели";
+"reminderView.segmentedControl.day" = "День";
+"reminderView.segmentedControl.month" = "Месяц";
+"reminderView.segmentedControl.week" = "Неделю";
+"reminderView.title" = "Настройки напоминаний";
+
+"webViewVC.label.case" = "Дело";
+"webViewVC.button.reload" = "Обновить страницу";

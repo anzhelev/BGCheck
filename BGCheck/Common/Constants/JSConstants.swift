@@ -1,4 +1,4 @@
-enum JavaScriptConstants {
+enum JSConstants {
     static let numberInputJavaScript = "document.getElementById('reqNun').value ="
     static let pinInputJavaScript = "document.getElementById('pin').value ="
     static let clickOnButtonJavaScript = "document.getElementsByTagName('button')[0].click();"
@@ -6,7 +6,14 @@ enum JavaScriptConstants {
         function checkForErrors() {
             var errorItems = document.querySelectorAll('div.validation-summary-errors.text-danger ul li');
             var messages = Array.from(errorItems).map(item => item.textContent.trim());
-            
+        
+            const searchText = "Резервиране на дата за получаване на удостоверение";
+            const pageText = document.body.innerText; // document.documentElement.textContent
+        
+            if (pageText.includes(searchText)) {
+                messages.push(searchText);
+            } 
+        
             if (messages.length > 0) {
                 window.webkit.messageHandlers.checkMessagesHandler.postMessage({
                     messages: messages
@@ -36,9 +43,4 @@ enum JavaScriptConstants {
             });
         }
         """
-}
-
-enum WebConstants {
-    static let mjcUrl = "https://publicbg.mjs.bg/BgInfo"
-    static let finalPageName: String = "Дирекция 'Българско гражданство'"
 }

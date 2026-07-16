@@ -16,8 +16,8 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
         let shouldSkipOnboarding = UserDefaults.standard.bool(forKey: "storedCases")
         
         return shouldSkipOnboarding
-        ? MainViewController()
-        : OnboardingVC()
+        ? WebViewVC()
+        : UINavigationController(rootViewController: OnboardingVC())
     }
     
     func sceneDidDisconnect(_ scene: UIScene) {
