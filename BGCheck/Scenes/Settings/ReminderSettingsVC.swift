@@ -3,8 +3,7 @@ import UIKit
 final class ReminderSettingsVC: UIViewController {
 
     // MARK: - Constants
-    private let pickerHeight: CGFloat = .buttonsWidth120
-
+    private let pickerHeight: CGFloat = .pickerHeight120
     // MARK: - Public Properties
     var onSave: ((ReminderSettings) -> Void)?
 
@@ -111,7 +110,7 @@ final class ReminderSettingsVC: UIViewController {
 
         let headerStack = UIStackView()
         headerStack.axis = .horizontal
-        headerStack.distribution = .fill
+        headerStack.distribution = .fillProportionally
         headerStack.alignment = .center
 
         titleLabel.text = .Localized.reminderViewTitle
@@ -179,7 +178,7 @@ final class ReminderSettingsVC: UIViewController {
         weeklyStack.spacing = .spacing8
         weeklyStack.isHidden = true
 
-        weeklyLabel.text = .Localized.reminderViewLabelSetDay
+        weeklyLabel.text = .Localized.reminderViewLabelSetDayOfWeek
         weeklyLabel.font = .systemFont16Medium
         weeklyLabel.textColor = .textPrimary
 
@@ -197,7 +196,7 @@ final class ReminderSettingsVC: UIViewController {
         monthlyStack.spacing = .spacing8
         monthlyStack.isHidden = true
 
-        monthlyLabel.text = .Localized.reminderViewLabelSetDay
+        monthlyLabel.text = .Localized.reminderViewLabelSetDayOfMonth
         monthlyLabel.font = .systemFont16Medium
         monthlyLabel.textColor = .textPrimary
 

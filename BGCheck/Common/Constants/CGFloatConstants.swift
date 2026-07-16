@@ -8,7 +8,7 @@ extension CGFloat {
     static let buttonsHeight48: CGFloat = 48
 
     static let buttonsWidth240: CGFloat = 240
-    static let buttonsWidth120: CGFloat = 120
+    static let buttonsWidth140: CGFloat = 140
     static let buttonsWidth60: CGFloat = 60
 
     static let cellHeight85: CGFloat = 85
@@ -17,6 +17,8 @@ extension CGFloat {
 
     static let cornerRadius16: CGFloat = 16
     static let cornerRadius12: CGFloat = 12
+    
+    static let pickerHeight120: CGFloat = 120
 
     static let spacing30: CGFloat = 30
     static let spacing20: CGFloat = 20

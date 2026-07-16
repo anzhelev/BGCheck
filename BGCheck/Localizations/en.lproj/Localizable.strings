@@ -15,12 +15,13 @@
 "onboardingVC.placeholder.enterNumber" = "Enter number";
 "onboardingVC.placeholder.enterPin" = "Enter pin";
 
-"reminder.message" = "Time to check your case status!";
+"reminder.message" = "It's time to check on your case.";
 
 "reminderView.button.save" = "Save";
 
 "reminderView.label.enabled" = "Enabled:";
-"reminderView.label.setDay" = "On:";
+"reminderView.label.setDayOfWeek" = "On:";
+"reminderView.label.setDayOfMonth" = "On the:";
 "reminderView.label.setFrequency" = "Every:";
 "reminderView.label.setTime" = "Remind me at:";
 "reminderView.segmentedControl.2week" = "2 Weeks";

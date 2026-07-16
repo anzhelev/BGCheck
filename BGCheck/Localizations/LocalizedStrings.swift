@@ -16,15 +16,16 @@ extension String {
         static let onboardingVCLabelCaseName = NSLocalizedString("onboardingVC.label.caseName", comment: "")
         static let onboardingVCLabelCasePin = NSLocalizedString("onboardingVC.label.casePin", comment: "")
         static let onboardingVCLabelCaseNumber = NSLocalizedString("onboardingVC.label.case№", comment: "")
-        static let onboardingVCPlaceholderName: String = "Enter name"
-        static let onboardingVCPlaceholderNumber: String = "Enter number"
-        static let onboardingVCPlaceholderPin: String = "Enter pin"
+        static let onboardingVCPlaceholderName: String = NSLocalizedString("onboardingVC.placeholder.enterName", comment: "")
+        static let onboardingVCPlaceholderNumber: String = NSLocalizedString("onboardingVC.placeholder.enterNumber", comment: "")
+        static let onboardingVCPlaceholderPin: String = NSLocalizedString("onboardingVC.placeholder.enterPin", comment: "")
         
         static let reminderMessage = NSLocalizedString("reminder.message", comment: "")
         
         static let reminderViewButtonSave = NSLocalizedString("reminderView.button.save", comment: "")
         static let reminderViewLabelEnabled = NSLocalizedString("reminderView.label.enabled", comment: "")
-        static let reminderViewLabelSetDay = NSLocalizedString("reminderView.label.setDay", comment: "")
+        static let reminderViewLabelSetDayOfWeek = NSLocalizedString("reminderView.label.setDayOfWeek", comment: "")
+        static let reminderViewLabelSetDayOfMonth = NSLocalizedString("reminderView.label.setDayOfMonth", comment: "")
         static let reminderViewLabelSetFrequency = NSLocalizedString("reminderView.label.setFrequency", comment: "")
         static let reminderViewLabelSetTime = NSLocalizedString("reminderView.label.setTime", comment: "")
         static let reminderViewFrequencyOptions: [String] = [

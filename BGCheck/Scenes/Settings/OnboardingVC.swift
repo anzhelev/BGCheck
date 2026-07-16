@@ -72,7 +72,7 @@ class OnboardingVC: UIViewController, KeyboardHandler {
     private func configureAddCaseButton() {
         addCaseButton.backgroundColor = .clear
         addCaseButton.layer.borderWidth = .borderWidth2
-        addCaseButton.layer.borderColor = UIColor.buttonsPrimary.cgColor
+        addCaseButton.layer.borderColor = .buttonsPrimaryCGC
         addCaseButton.layer.cornerRadius = .cornerRadius16
         addCaseButton.layer.masksToBounds = true
         addCaseButton.clipsToBounds = true
@@ -103,7 +103,7 @@ class OnboardingVC: UIViewController, KeyboardHandler {
         NSLayoutConstraint.activate([
             label.leadingAnchor.constraint(equalTo: casesView.leadingAnchor),
             addCaseButton.leadingAnchor.constraint(equalTo: label.trailingAnchor, constant: .spacing10),
-            addCaseButton.widthAnchor.constraint(equalToConstant: .buttonsWidth120),
+            addCaseButton.widthAnchor.constraint(equalToConstant: .buttonsWidth140),
             addCaseButton.heightAnchor.constraint(equalToConstant: .buttonsHeight48),
             remindButton.trailingAnchor.constraint(equalTo: casesView.trailingAnchor),
             remindButton.leadingAnchor.constraint(equalTo: addCaseButton.trailingAnchor, constant: .spacing10),

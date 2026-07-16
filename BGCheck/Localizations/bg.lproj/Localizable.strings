@@ -1,0 +1,34 @@
+"app.name" = "BG Status Check";
+"locale.identifier" = "bg_BG";
+
+"historyVC.formatter.dateFormat" = "dd.MM.yyyy";
+"historyVC.message.startMonitoring" = "Начало на проследяване";
+
+"onboardingVC.button.addNewCase" = "Нова преписка";
+"onboardingVC.button.delete" = "Изтрий";
+"onboardingVC.button.done" = "Готово";
+"onboardingVC.label.Cases" = "Преписки (до 5):";
+"onboardingVC.label.caseName" = "Име:";
+"onboardingVC.label.casePin" = "Пин:";
+"onboardingVC.label.case№" = "№:";
+"onboardingVC.placeholder.enterName" = "Въведи име";
+"onboardingVC.placeholder.enterNumber" = "Въведи номер";
+"onboardingVC.placeholder.enterPin" = "Въведи пин";
+
+"reminder.message" = "Време е да проверите статуса на вашата преписка.";
+
+"reminderView.button.save" = "Запази";
+
+"reminderView.label.enabled" = "Включени:";
+"reminderView.label.setDayOfWeek" = "В деня:";
+"reminderView.label.setDayOfMonth" = "На число:";
+"reminderView.label.setFrequency" = "Всеки:";
+"reminderView.label.setTime" = "Напомни ми в:";
+"reminderView.segmentedControl.2week" = "2 Седмици";
+"reminderView.segmentedControl.day" = "Ден";
+"reminderView.segmentedControl.month" = "Месец";
+"reminderView.segmentedControl.week" = "Седмица";
+"reminderView.title" = "Настройки за напомняне";
+
+"webViewVC.label.case" = "Преписка";
+"webViewVC.button.reload" = "Презареди страницата";
