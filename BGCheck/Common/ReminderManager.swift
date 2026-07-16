@@ -10,15 +10,7 @@ enum ReminderFrequency: Int {
 
 final class ReminderManager {
     
-    // MARK: - Singleton
-    static let shared = ReminderManager()
-    private init() {}
-    
-    // MARK: - Dependencies
-    private let eventStore = EKEventStore()
-    private let calendar = Calendar.current
-    
-    // MARK: - String Conatants
+    // MARK: - Constants
     private enum Strings: String {
         case nsErrorDomain = "ReminderManager"
         case requestAccessError = "@@@ Request access error:"
@@ -37,29 +29,17 @@ final class ReminderManager {
         case saveError = "@@@ Save error:"
     }
     
-    // MARK: - Public Methods
-    func requestAccess(completion: @escaping (Bool) -> Void) {
-        let status = EKEventStore.authorizationStatus(for: .reminder)
-        switch status {
-        case .authorized, .fullAccess:
-            completion(true)
-        case .notDetermined:
-            eventStore.requestAccess(to: .reminder) { granted, error in
-                DispatchQueue.main.async {
-                    if let error = error {
-                        print(Strings.requestAccessError.rawValue, error.localizedDescription)
-                    }
-                    completion(granted)
-                }
-            }
-        case .denied, .restricted, .writeOnly:
-            print(Strings.accessDenied.rawValue)
-            completion(false)
-        default:
-            completion(false)
-        }
-    }
+    // MARK: - Public Properties
+    static let shared = ReminderManager()
     
+    // MARK: - Private Properties
+    private let calendar = Calendar.current
+    private let eventStore = EKEventStore()
+    
+    // MARK: - Initializers
+    private init() {}
+    
+    // MARK: - Public Methods
     func createReminder(
         title: String,
         targetTime: Date,
@@ -129,7 +109,7 @@ final class ReminderManager {
                     return
                 }
                 
-                for reminder in remindersToRemove {
+                remindersToRemove.forEach { reminder in
                     do {
                         try self?.eventStore.remove(reminder, commit: false)
                     } catch {
@@ -149,35 +129,25 @@ final class ReminderManager {
         }
     }
     
-    func removeAllReminders(completion: @escaping (Bool, Error?) -> Void) {
-        requestAccess { [weak self] granted in
-            guard granted else {
-                completion(false, nil)
-                return
-            }
-            guard let predicate = self?.eventStore.predicateForReminders(in: nil) else {
-                completion(false, nil)
-                return
-            }
-            self?.eventStore.fetchReminders(matching: predicate) { reminders in
-                guard let reminders = reminders else {
-                    completion(false, nil)
-                    return
-                }
-                for reminder in reminders {
-                    do {
-                        try self?.eventStore.remove(reminder, commit: false)
-                    } catch {
-                        print(Strings.removeError.rawValue, error.localizedDescription)
+    func requestAccess(completion: @escaping (Bool) -> Void) {
+        let status = EKEventStore.authorizationStatus(for: .reminder)
+        switch status {
+        case .authorized, .fullAccess:
+            completion(true)
+        case .notDetermined:
+            eventStore.requestAccess(to: .reminder) { granted, error in
+                DispatchQueue.main.async {
+                    if let error = error {
+                        print(Strings.requestAccessError.rawValue, error.localizedDescription)
                     }
-                }
-                do {
-                    try self?.eventStore.commit()
-                    completion(true, nil)
-                } catch {
-                    completion(false, error)
+                    completion(granted)
                 }
             }
+        case .denied, .restricted, .writeOnly:
+            print(Strings.accessDenied.rawValue)
+            completion(false)
+        default:
+            completion(false)
         }
     }
     
@@ -215,6 +185,19 @@ final class ReminderManager {
             return nil
         }
         return nextDate
+    }
+    
+    private static func ekWeekday(from intValue: Int) -> EKWeekday {
+        switch intValue {
+        case 1: return .sunday
+        case 2: return .monday
+        case 3: return .tuesday
+        case 4: return .wednesday
+        case 5: return .thursday
+        case 6: return .friday
+        case 7: return .saturday
+        default: return .sunday
+        }
     }
     
     private func saveReminder(
@@ -327,20 +310,6 @@ final class ReminderManager {
         } catch {
             print(Strings.saveError.rawValue, error.localizedDescription)
             completion(false, error)
-        }
-    }
-    
-    // MARK: - Helpers
-    private static func ekWeekday(from intValue: Int) -> EKWeekday {
-        switch intValue {
-        case 1: return .sunday
-        case 2: return .monday
-        case 3: return .tuesday
-        case 4: return .wednesday
-        case 5: return .thursday
-        case 6: return .friday
-        case 7: return .saturday
-        default: return .sunday
         }
     }
 }
