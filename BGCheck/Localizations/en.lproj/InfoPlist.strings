@@ -1,2 +1,3 @@
 "CFBundleDisplayName" = "BG Status Check";
 "NSRemindersFullAccessUsageDescription" = "The app needs access to your reminders to create and manage them for you.";
+"NSCalendarsUsageDescription" = "The app needs access to your calendar to let you schedule and manage events related to BG Status Check.";
