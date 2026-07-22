@@ -1,0 +1,143 @@
+/LocalResources/
+
+# === Xcode ===
+# Xcode generated files
+*.xcodeproj/
+*.xcworkspace/
+!*.xcodeproj/project.pbxproj
+!*.xcodeproj/xcuserdata/
+!*.xcworkspace/contents.xcworkspacedata
+
+# User-specific settings
+*.xcuserstate
+*.xcscheme
+xcuserdata/
+*.xcuserdatad/
+
+# Build directories
+build/
+DerivedData/
+*.build/
+*.bcsymbolmap
+
+# Archives
+*.dSYM.zip
+*.xcarchive
+
+# === iOS specific ===
+# CocoaPods
+Pods/
+Podfile.lock
+!Podfile
+
+# Carthage
+Carthage/Build/
+Carthage/Checkouts/
+
+# Swift Package Manager
+.swiftpm/
+Package.resolved
+.build/
+
+# Fastlane
+fastlane/report.xml
+fastlane/Preview.html
+fastlane/screenshots/
+fastlane/test_output/
+
+# === Xcode generated files ===
+# User settings
+*.mode1v3
+*.mode2v3
+*.perspectivev3
+*.pbxuser
+*.hmap
+*.ipa
+*.dSYM
+*.app
+*.framework
+*.xccheckout
+
+# === macOS ===
+.DS_Store
+.AppleDouble
+.LSOverride
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# === IDE ===
+# VSCode
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# === Git ===
+*.orig
+*.rej
+*.patch
+*.diff
+
+# === Secrets & Keys ===
+# Never commit API keys, certificates, or plist with secrets
+GoogleService-Info.plist
+*.p12
+*.pem
+*.mobileprovision
+*.provisionprofile
+*.cer
+*.der
+*.key
+*.crt
+*.csr
+*.p8
+
+# === Crash logs ===
+*.crash
+*.ips
+*.ips.beta
+
+# === Temp files ===
+*.tmp
+*.temp
+*.log
+*.cache
+*.lock
+*.pid
+*.pid.lock
+
+# === Project specific ===
+# If you use Realm
+*.realm
+*.realm.lock
+*.realm.management
+
+# If you use CoreData
+*.sqlite
+*.sqlite-shm
+*.sqlite-wal
+
+# If you use Firebase
+firebase-debug.log
+
+# === Fastlane ===
+fastlane/README.md
+fastlane/.env
+fastlane/.env.default
+
+# === Test reports ===
+*.xctest
+*.xctestrun
+*.testresult
+
+# === Dependency managers ===
+# Tuist
+Tuist/Dependencies/
+Tuist/.build/
+
+# Mint
+mint/
