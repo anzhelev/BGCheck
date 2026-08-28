@@ -1,9 +1,11 @@
 import UIKit
 
 enum OnboardingVCBinding {
+
     case addItem(IndexPath)
-    case removeItem([IndexPath])
     case doneButtonAction
-    case updateRemindButtonState(Bool)
+    case removeItem([IndexPath])
     case showHistory(Int, Case)
+    case showNotificationPermissionDenied
+    case updateRemindButtonState(Bool)
 }

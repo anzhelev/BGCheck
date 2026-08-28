@@ -29,6 +29,7 @@ class OnboardingVC: UIViewController, KeyboardHandler {
         super.viewWillAppear(animated)
         navigationController?.isNavigationBarHidden = true
         setupKeyboardHandling()
+        viewModel.refreshNotificationPermissionState()
     }
 
     override func viewWillDisappear(_ animated: Bool) {
@@ -63,6 +64,8 @@ class OnboardingVC: UIViewController, KeyboardHandler {
                 let assembler = HistoryViewAssembler(number: row, userCase: userCase)
                 let viewController = assembler.build()
                 self.navigationController?.pushViewController(viewController, animated: true)
+            case .showNotificationPermissionDenied:
+                self.showNotificationPermissionAlert()
             default:
                 break
             }
@@ -218,6 +221,35 @@ class OnboardingVC: UIViewController, KeyboardHandler {
         ])
     }
 
+    private func showNotificationPermissionAlert() {
+        guard presentedViewController == nil else { return }
+
+        let alert = UIAlertController(
+            title: .Localized.notificationPermissionAlertTitle,
+            message: .Localized.notificationPermissionAlertMessage,
+            preferredStyle: .alert
+        )
+
+        alert.addAction(
+            UIAlertAction(
+                title: .Localized.notificationPermissionAlertButtonCancel,
+                style: .cancel
+            )
+        )
+        alert.addAction(
+            UIAlertAction(
+                title: .Localized.notificationPermissionAlertButtonSettings,
+                style: .default
+            ) { _ in
+                guard let settingsURL = URL(string: UIApplication.openSettingsURLString) else { return }
+
+                UIApplication.shared.open(settingsURL)
+            }
+        )
+
+        present(alert, animated: true)
+    }
+
     private func switchToMainView() {
         guard let window = self.view.window else { fatalError("Invalid Configuration") }
         window.rootViewController = WebViewVC()
@@ -289,9 +321,14 @@ extension OnboardingVC: UITableViewDataSource, UITableViewDelegate {
         return viewModel.casesCount
     }
 
-    func tableView(_ tableView: UITableView, trailingSwipeActionsConfigurationForRowAt indexPath: IndexPath) -> UISwipeActionsConfiguration? {
-        let primaryAction = UIContextualAction(style: .destructive,
-                                               title: .Localized.onboardingVCButtonDelete) { [weak self] (action, view, completionHandler) in
+    func tableView(
+        _ tableView: UITableView,
+        trailingSwipeActionsConfigurationForRowAt indexPath: IndexPath
+    ) -> UISwipeActionsConfiguration? {
+        let primaryAction = UIContextualAction(
+            style: .destructive,
+            title: .Localized.onboardingVCButtonDelete
+        ) { [weak self] _, _, completionHandler in
             self?.viewModel.deleteButtonTapped(for: indexPath.row)
             completionHandler(true)
         }

@@ -15,6 +15,11 @@
 "onboardingVC.placeholder.enterNumber" = "Въведи номер";
 "onboardingVC.placeholder.enterPin" = "Въведи пин";
 
+"notificationPermissionAlert.button.cancel" = "Отказ";
+"notificationPermissionAlert.button.settings" = "Отвори настройките";
+"notificationPermissionAlert.message" = "Разрешете известията в настройките, за да получавате напомняния за проверка на статуса на преписката.";
+"notificationPermissionAlert.title" = "Известията са изключени";
+
 "reminder.message" = "Време е да проверите статуса на вашата преписка.";
 
 "reminderView.button.save" = "Запази";

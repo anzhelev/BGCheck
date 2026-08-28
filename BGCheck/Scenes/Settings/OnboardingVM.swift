@@ -1,13 +1,13 @@
 import Foundation
 
 class OnboardingVM {
-
+    
     // MARK: - Public Properties
     var casesCount: Int {
         return cases.count
     }
     var onboardingVCBinding: Observable<OnboardingVCBinding> = Observable(nil)
-
+    
     // MARK: - Private Properties
     private lazy var cases: [Case] = {
         loadCases()
@@ -21,11 +21,11 @@ class OnboardingVM {
             onboardingVCBinding.value = .updateRemindButtonState(storedNotificationSettings.isEnabled)
         }
     }
-    private lazy var weekDays: [String] = {
-        let calendar = Calendar.current
-        return calendar.weekdaySymbols
+    private lazy var weekDays: [WeekdayOption] = {
+        let locale = Locale(identifier: .Localized.localeIdentifier)
+        return WeekdayOption.localized(for: locale)
     }()
-
+    
     // MARK: - Public Methods
     func addCase() {
         cases.append(
@@ -38,16 +38,16 @@ class OnboardingVM {
         )
         onboardingVCBinding.value = .addItem(.init(row: casesCount - 1, section: 0))
     }
-
+    
     func confirmButtonPressed() {
         saveCases()
         onboardingVCBinding.value = .doneButtonAction
     }
-
+    
     func getAddButtonState() -> Bool {
         cases.count < 5
     }
-
+    
     func getCellParams(for row: Int) -> OnboardingTableCellParams {
         .init(
             row: row,
@@ -56,28 +56,49 @@ class OnboardingVM {
             pin: cases[row].pin
         )
     }
-
+    
     func getRemindState() -> Bool {
         storedNotificationSettings.isEnabled
     }
-
+    
     func getStoredNotificationSettings() -> ReminderSettings {
         storedNotificationSettings
     }
-
-    func getWeekDays() -> [String] {
+    
+    func getWeekDays() -> [WeekdayOption] {
         weekDays
     }
-
+    
+    func refreshNotificationPermissionState() {
+        guard storedNotificationSettings.isEnabled else { return }
+        
+        NotificationService.shared.getAuthorizationStatus { [weak self] status in
+            guard let self, status == .denied else { return }
+            
+            self.disableNotifications(basedOn: self.storedNotificationSettings)
+        }
+    }
+    
     func updateNotificationSettings(with newSettings: ReminderSettings) {
         storedNotificationSettings = newSettings
-        if let encoded = try? encoder.encode(newSettings) {
-            UserDefaults.standard.set(encoded, forKey: "notificationSettings")
-        }
-        updateReminders(with: newSettings)
+        newSettings.save()
+        updateNotifications(with: newSettings)
     }
-
+    
     // MARK: - Private Methods
+    private func disableNotifications(basedOn settings: ReminderSettings) {
+        let disabledSettings = ReminderSettings(
+            isEnabled: false,
+            frequency: settings.frequency,
+            time: settings.time,
+            weekday: settings.weekday,
+            monthDay: settings.monthDay
+        )
+        
+        storedNotificationSettings = disabledSettings
+        disabledSettings.save()
+    }
+    
     private func loadCases() -> [Case] {
         var cases: [Case] = []
         for row in 0...4 {
@@ -102,31 +123,33 @@ class OnboardingVM {
         }
         return cases
     }
-
+    
     private func loadNotificationSettings() -> ReminderSettings {
-        if let savedData = UserDefaults.standard.data(forKey: "notificationSettings"),
-           let settings = try? decoder.decode(ReminderSettings.self, from: savedData) {
+        if let settings = ReminderSettings.load() {
             return settings
         } else {
+            let locale = Locale(identifier: .Localized.localeIdentifier)
+            let defaultWeekday = WeekdayOption.localized(for: locale).first?.weekday ?? .sunday
+            
             return .init(
                 isEnabled: false,
-                frequency: 1,
+                frequency: .weekly,
                 time: Calendar.current.startOfDay(for: Date()) + 39600,
-                weekDayIndex: 0,
+                weekday: defaultWeekday,
                 monthDay: 1
             )
         }
     }
-
+    
     private func saveCases() {
         updateHistory()
         let allKeys = UserDefaults.standard.dictionaryRepresentation().keys
         for key in allKeys where key.hasPrefix("case") {
             UserDefaults.standard.removeObject(forKey: key)
         }
-
+        
         var storedCases = false
-
+        
         for (index, caseData) in cases.enumerated() {
             if caseData.caseName?.isEmpty == false {
                 UserDefaults.standard.set(caseData.caseName, forKey: "case\(index)Name")
@@ -146,7 +169,7 @@ class OnboardingVM {
         }
         UserDefaults.standard.set(storedCases, forKey: "storedCases")
     }
-
+    
     private func updateHistory() {
         for index in cases.indices {
             if UserDefaults.standard.object(forKey: "case\(index)History") != nil {
@@ -169,30 +192,22 @@ class OnboardingVM {
             }
         }
     }
-
-    private func updateReminders(with newSettings: ReminderSettings) {
-        if newSettings.isEnabled {
-            ReminderManager.shared.createReminder(
-                title: .Localized.appName,
-                targetTime: newSettings.time,
-                frequency: .init(rawValue: newSettings.frequency) ?? .monthly,
-                weekday: newSettings.weekDayIndex + 1,
-                monthDay: newSettings.monthDay,
-                notes: .Localized.reminderMessage
-            ) { success, error in
-                if success {
-                    print("@@@ Reminder created")
-                } else {
-                    print("@@@ Error creating reminder: \(String(describing: error))")
+    
+    private func updateNotifications(with newSettings: ReminderSettings) {
+        NotificationService.shared.synchronizeNotifications { [weak self] success, error in
+            guard let self else { return }
+            
+            if success {
+                let message = newSettings.isEnabled ? "@@@ Notifications scheduled" : "@@@ Notifications disabled"
+                print(message)
+            } else {
+                if let notificationError = error as? NotificationServiceError,
+                   notificationError == .authorizationDenied {
+                    self.disableNotifications(basedOn: newSettings)
+                    self.onboardingVCBinding.value = .showNotificationPermissionDenied
                 }
-            }
-        } else {
-            ReminderManager.shared.removeReminders(withTitle: .Localized.appName) { success, error in
-                if success {
-                    print("@@@ Reminders disabled")
-                } else {
-                    print("@@@ Error disabling reminders: \(String(describing: error))")
-                }
+                
+                print("@@@ Error updating notifications: \(String(describing: error))")
             }
         }
     }

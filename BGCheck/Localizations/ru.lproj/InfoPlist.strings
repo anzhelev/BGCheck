@@ -1,3 +1,1 @@
 "CFBundleDisplayName" = "BG Status Check";
-"NSRemindersFullAccessUsageDescription" = "Приложению нужен доступ к вашим напоминаниям, чтобы создавать и управлять ими для вас.";
-"NSCalendarsUsageDescription" = "Это приложение запрашивает доступ к вашему календарю, чтобы вы могли планировать и управлять событиями, связанными с услугами BG Status Check.";

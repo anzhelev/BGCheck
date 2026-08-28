@@ -15,6 +15,11 @@
 "onboardingVC.placeholder.enterNumber" = "Enter number";
 "onboardingVC.placeholder.enterPin" = "Enter pin";
 
+"notificationPermissionAlert.button.cancel" = "Cancel";
+"notificationPermissionAlert.button.settings" = "Open Settings";
+"notificationPermissionAlert.message" = "Enable notifications in Settings to receive reminders to check your case status.";
+"notificationPermissionAlert.title" = "Notifications Are Disabled";
+
 "reminder.message" = "It's time to check on your case.";
 
 "reminderView.button.save" = "Save";

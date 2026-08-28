@@ -4,6 +4,7 @@ final class ReminderSettingsVC: UIViewController {
 
     // MARK: - Constants
     private let pickerHeight: CGFloat = .pickerHeight120
+
     // MARK: - Public Properties
     var onSave: ((ReminderSettings) -> Void)?
 
@@ -13,23 +14,23 @@ final class ReminderSettingsVC: UIViewController {
     private let enableSwitch = UISwitch()
     private let frequencyLabel = UILabel()
     private let frequencySegmented = UISegmentedControl(items: String.Localized.reminderViewFrequencyOptions)
+    private let monthDays: [String] = Array(1...31).map { "\($0)" }
     private let monthlyLabel = UILabel()
     private let monthlyPicker = UIPickerView()
     private let monthlyStack = UIStackView()
-    private let monthDays: [String] = Array(1...28).map { "\($0)" }
     private let saveButton = UIButton(type: .system)
     private var storedSettings: ReminderSettings?
     private let timeLabel = UILabel()
     private let timePicker = UIDatePicker()
     private let timeRowStack = UIStackView()
     private let titleLabel = UILabel()
-    private var weekDays: [String] = []
+    private var weekDays: [WeekdayOption] = []
     private let weeklyLabel = UILabel()
     private let weeklyPicker = UIPickerView()
     private let weeklyStack = UIStackView()
 
     // MARK: - Initializers
-    init(weekDays: [String], storedSettings: ReminderSettings) {
+    init(weekDays: [WeekdayOption], storedSettings: ReminderSettings) {
         super.init(nibName: nil, bundle: nil)
         self.weekDays = weekDays
         self.storedSettings = storedSettings
@@ -44,34 +45,8 @@ final class ReminderSettingsVC: UIViewController {
         super.viewDidLoad()
         view.backgroundColor = .backbroundTertiary
         setupCardView()
-        updateVisibility(for: frequencySegmented.selectedSegmentIndex)
-        updateEnabledState()
-    }
-
-    // MARK: - Actions
-    @objc private func closeTapped() {
-        dismiss(animated: true)
-    }
-
-    @objc private func frequencyChanged(_ sender: UISegmentedControl) {
-        updateVisibility(for: sender.selectedSegmentIndex)
-    }
-
-    @objc private func saveTapped() {
-        storedSettings = ReminderSettings(
-            isEnabled: enableSwitch.isOn,
-            frequency: frequencySegmented.selectedSegmentIndex,
-            time: timePicker.date,
-            weekDayIndex: weeklyPicker.selectedRow(inComponent: 0),
-            monthDay: Int(monthDays[monthlyPicker.selectedRow(inComponent: 0)]) ?? 1
-        )
-        if let storedSettings {
-            onSave?(storedSettings)
-            dismiss(animated: true)
-        }
-    }
-
-    @objc private func switchChanged() {
+        let frequency = ReminderFrequency(rawValue: frequencySegmented.selectedSegmentIndex) ?? .daily
+        updateVisibility(for: frequency)
         updateEnabledState()
     }
 
@@ -169,7 +144,7 @@ final class ReminderSettingsVC: UIViewController {
         frequencyLabel.textColor = .textPrimary
         stack.addArrangedSubview(frequencyLabel)
 
-        frequencySegmented.selectedSegmentIndex = storedSettings?.frequency ?? 0
+        frequencySegmented.selectedSegmentIndex = storedSettings?.frequency.rawValue ?? ReminderFrequency.daily.rawValue
         frequencySegmented.overrideUserInterfaceStyle = .light
         frequencySegmented.addTarget(self, action: #selector(frequencyChanged), for: .valueChanged)
         stack.addArrangedSubview(frequencySegmented)
@@ -184,7 +159,9 @@ final class ReminderSettingsVC: UIViewController {
 
         weeklyPicker.dataSource = self
         weeklyPicker.delegate = self
-        weeklyPicker.selectRow(storedSettings?.weekDayIndex ?? 0, inComponent: 0, animated: false)
+        let storedWeekday = storedSettings?.weekday ?? .sunday
+        let storedWeekdayRow = weekDays.firstIndex { $0.weekday == storedWeekday } ?? 0
+        weeklyPicker.selectRow(storedWeekdayRow, inComponent: 0, animated: false)
         weeklyPicker.heightAnchor.constraint(equalToConstant: pickerHeight).isActive = true
         weeklyPicker.overrideUserInterfaceStyle = .light
 
@@ -243,13 +220,57 @@ final class ReminderSettingsVC: UIViewController {
         monthlyPicker.isUserInteractionEnabled = isOn
     }
 
-    private func updateVisibility(for index: Int) {
-        weeklyStack.isHidden = index != 1 && index != 2
-        monthlyStack.isHidden = index != 3
+    private func updateVisibility(for frequency: ReminderFrequency) {
+        switch frequency {
+        case .daily:
+            monthlyStack.isHidden = true
+            weeklyStack.isHidden = true
+        case .weekly, .biweekly:
+            monthlyStack.isHidden = true
+            weeklyStack.isHidden = false
+        case .monthly:
+            monthlyStack.isHidden = false
+            weeklyStack.isHidden = true
+        }
 
         UIView.animate(withDuration: 0.25) {
             self.view.layoutIfNeeded()
         }
+    }
+
+    // MARK: - Actions
+    @objc private func closeTapped() {
+        dismiss(animated: true)
+    }
+
+    @objc private func frequencyChanged(_ sender: UISegmentedControl) {
+        let frequency = ReminderFrequency(rawValue: sender.selectedSegmentIndex) ?? .daily
+        updateVisibility(for: frequency)
+    }
+
+    @objc private func saveTapped() {
+        let selectedRow = weeklyPicker.selectedRow(inComponent: 0)
+        let selectedWeekday = weekDays.indices.contains(selectedRow)
+            ? weekDays[selectedRow].weekday
+            : storedSettings?.weekday ?? .sunday
+
+        storedSettings = ReminderSettings(
+            isEnabled: enableSwitch.isOn,
+            frequency: ReminderFrequency(rawValue: frequencySegmented.selectedSegmentIndex) ?? .daily,
+            time: timePicker.date,
+            weekday: selectedWeekday,
+            monthDay: Int(monthDays[monthlyPicker.selectedRow(inComponent: 0)]) ?? 1
+        )
+
+        guard let storedSettings else { return }
+
+        dismiss(animated: true) { [weak self] in
+            self?.onSave?(storedSettings)
+        }
+    }
+
+    @objc private func switchChanged() {
+        updateEnabledState()
     }
 }
 
@@ -271,7 +292,7 @@ extension ReminderSettingsVC: UIPickerViewDataSource, UIPickerViewDelegate {
 
     func pickerView(_ pickerView: UIPickerView, titleForRow row: Int, forComponent component: Int) -> String? {
         if pickerView == weeklyPicker {
-            return weekDays[row]
+            return weekDays[row].title
         } else if pickerView == monthlyPicker {
             return monthDays[row]
         }

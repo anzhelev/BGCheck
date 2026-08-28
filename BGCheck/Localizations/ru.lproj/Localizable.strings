@@ -15,6 +15,11 @@
 "onboardingVC.placeholder.enterNumber" = "Введите номер";
 "onboardingVC.placeholder.enterPin" = "Введите пин";
 
+"notificationPermissionAlert.button.cancel" = "Отмена";
+"notificationPermissionAlert.button.settings" = "Открыть настройки";
+"notificationPermissionAlert.message" = "Разрешите уведомления в настройках, чтобы получать напоминания о проверке статуса дела.";
+"notificationPermissionAlert.title" = "Уведомления отключены";
+
 "reminder.message" = "Пора проверить статус вашего дела.";
 
 "reminderView.button.save" = "Сохранить";
